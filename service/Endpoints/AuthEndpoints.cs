@@ -1,4 +1,4 @@
-using Stoxolio.Service.Features.Auth;
+using Stoxolio.Service.Auth;
 
 namespace Stoxolio.Service.Endpoints;
 

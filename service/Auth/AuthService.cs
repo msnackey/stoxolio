@@ -1,13 +1,12 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using BCrypt.Net;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Stoxolio.Service.Data;
 using Stoxolio.Service.Models;
 
-namespace Stoxolio.Service.Services;
+namespace Stoxolio.Service.Auth;
 
 public interface IAuthService
 {

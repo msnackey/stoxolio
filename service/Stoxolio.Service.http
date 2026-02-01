@@ -1,5 +1,5 @@
 @baseUrl = http://localhost:5001
-@AuthToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjEiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoidGVzdHVzZXIiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJ0ZXN0QGV4YW1wbGUuY29tIiwiZXhwIjoxNzcwMDI3MjU2LCJpc3MiOiJzdG94b2xpbyIsImF1ZCI6InN0b3hvbGlvLWNsaWVudCJ9.gLXkklGjvA6WoKk70YyI4zZvYeyzdxRJCIdtlO9JoTs
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjEiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoidGVzdHVzZXIiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJ0ZXN0QGV4YW1wbGUuY29tIiwiZXhwIjoxNzcwMDI3MjU2LCJpc3MiOiJzdG94b2xpbyIsImF1ZCI6InN0b3hvbGlvLWNsaWVudCJ9.gLXkklGjvA6WoKk70YyI4zZvYeyzdxRJCIdtlO9JoTs
 
 ### Login with test user
 POST {{baseUrl}}/api/auth/login
@@ -22,17 +22,17 @@ Content-Type: application/json
 
 ### Get all categories
 GET {{baseUrl}}/api/categories
-Authorization: Bearer {{AuthToken}}
+Authorization: Bearer {{token}}
 Accept: application/json
 
 ### Get specific category (ID: 1)
 GET {{baseUrl}}/api/categories/1
-Authorization: Bearer {{AuthToken}}
+Authorization: Bearer {{token}}
 Accept: application/json
 
 ### Create new category
 POST {{baseUrl}}/api/categories
-Authorization: Bearer {{AuthToken}}
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -42,7 +42,7 @@ Content-Type: application/json
 
 ### Update category (ID: 1)
 PUT {{baseUrl}}/api/categories/1
-Authorization: Bearer {{AuthToken}}
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -52,21 +52,21 @@ Content-Type: application/json
 
 ### Delete category (ID: 3)
 DELETE {{baseUrl}}/api/categories/3
-Authorization: Bearer {{AuthToken}}
+Authorization: Bearer {{token}}
 
 ### Get all stocks
 GET {{baseUrl}}/api/stocks
-Authorization: Bearer {{AuthToken}}
+Authorization: Bearer {{token}}
 Accept: application/json
 
 ### Get specific stock (ID: 1 - AAPL)
 GET {{baseUrl}}/api/stocks/1
-Authorization: Bearer {{AuthToken}}
+Authorization: Bearer {{token}}
 Accept: application/json
 
 ### Create new stock
 POST {{baseUrl}}/api/stocks
-Authorization: Bearer {{AuthToken}}
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -83,7 +83,7 @@ Content-Type: application/json
 
 ### Update stock (ID: 1 - AAPL)
 PUT {{baseUrl}}/api/stocks/1
-Authorization: Bearer {{AuthToken}}
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -100,4 +100,4 @@ Content-Type: application/json
 
 ### Delete stock (ID: 3 - JPM)
 DELETE {{baseUrl}}/api/stocks/3
-Authorization: Bearer {{AuthToken}}
+Authorization: Bearer {{token}}

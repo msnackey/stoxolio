@@ -1,8 +1,7 @@
 using Stoxolio.Service.BuildingBlocks.CQRS;
 using Stoxolio.Service.DTOs;
-using Stoxolio.Service.Services;
 
-namespace Stoxolio.Service.Features.Auth;
+namespace Stoxolio.Service.Auth;
 
 public sealed record RegisterQuery(string Username, string Email, string Password) : ICommand<AuthResponse>;
 
