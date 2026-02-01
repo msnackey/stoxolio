@@ -1,0 +1,41 @@
+# Backend (.NET)
+bin/
+obj/
+.vs/
+.vscode/
+*.user
+*.suo
+*.sln.docstates
+.DS_Store
+appsettings.development.json
+appsettings.production.json
+
+# Databases
+*.db
+*.sqlite
+*.sqlite3
+
+# Frontend (Node)
+node_modules/
+dist/
+build/
+.env.local
+.env.*.local
+
+# IDE
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Environment
+.env

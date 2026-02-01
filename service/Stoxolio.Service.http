@@ -1,0 +1,6 @@
+@Stoxolio.Service_HostAddress = http://localhost:5001
+
+GET {{Stoxolio.Service_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
