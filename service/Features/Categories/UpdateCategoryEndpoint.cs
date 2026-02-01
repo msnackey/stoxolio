@@ -1,53 +1,38 @@
 using Stoxolio.Service.BuildingBlocks.CQRS;
 using Stoxolio.Service.Data;
-using Stoxolio.Service.DTOs;
+using Stoxolio.Service.Models;
 
 namespace Stoxolio.Service.Features.Categories;
 
-public sealed record UpdateCategoryCommand(int Id, CategoryDto CategoryDto) : ICommand<bool>;
+public sealed record UpdateCategoryCommand(UpdateCategoryRequest Request) : ICommand<UpdateCategoryResponse>;
 
-public class UpdateCategoryEndpoint
+public sealed record UpdateCategoryRequest
 {
-    private static async Task<IResult> HandleUpdateCategory(
-        int id,
-        CategoryDto categoryDto,
-        StoxolioDbContext context,
-        CancellationToken cancellationToken)
+    public required int Id { get; init; }
+    public string? Name { get; init; }
+    public double? Target { get; init; }
+}
+
+public sealed record UpdateCategoryResponse
+{
+    public required Category Category { get; init; }
+}
+
+public class UpdateCategoryHandler(StoxolioDbContext context) : ICommandHandler<UpdateCategoryCommand, UpdateCategoryResponse>
+{
+    public async Task<UpdateCategoryResponse> Handle(UpdateCategoryCommand command, CancellationToken cancellationToken)
     {
-        var handler = new UpdateCategoryHandler(context);
-        var success = await handler.Handle(new UpdateCategoryCommand(id, categoryDto), cancellationToken);
-        return success ? Results.NoContent() : Results.NotFound();
-    }
+        var category = await context.Categories.FindAsync(command.Request.Id, cancellationToken);
 
-    public static void MapEndpoint(RouteGroupBuilder group)
-    {
-        group.MapPut("/{id}", HandleUpdateCategory)
-            .WithName("UpdateCategory");
-    }
+        if (category == null)
+            throw new InvalidOperationException("Category not found"); // TODO: Implement result pattern
 
-    private class UpdateCategoryHandler : ICommandHandler<UpdateCategoryCommand, bool>
-    {
-        private readonly StoxolioDbContext _context;
+        category.Name = command.Request.Name ?? category.Name;
+        category.Target = command.Request.Target ?? category.Target;
 
-        public UpdateCategoryHandler(StoxolioDbContext context)
-        {
-            _context = context;
-        }
+        context.Categories.Update(category);
+        await context.SaveChangesAsync(cancellationToken);
 
-        public async Task<bool> Handle(UpdateCategoryCommand request, CancellationToken cancellationToken)
-        {
-            var category = await _context.Categories.FindAsync(new object[] { request.Id }, cancellationToken);
-
-            if (category == null)
-                return false;
-
-            category.Name = request.CategoryDto.Name;
-            category.Target = request.CategoryDto.Target;
-
-            _context.Categories.Update(category);
-            await _context.SaveChangesAsync(cancellationToken);
-
-            return true;
-        }
+        return new UpdateCategoryResponse { Category = category };
     }
 }

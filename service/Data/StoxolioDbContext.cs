@@ -12,6 +12,7 @@ public class StoxolioDbContext : DbContext
     public DbSet<User> Users { get; set; }
     public DbSet<Category> Categories { get; set; }
     public DbSet<Stock> Stocks { get; set; }
+    public DbSet<Transaction> Transactions { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -33,6 +34,10 @@ public class StoxolioDbContext : DbContext
         modelBuilder.Entity<Category>()
             .HasKey(c => c.Id);
 
+        modelBuilder.Entity<Category>()
+            .Property(c => c.Target)
+            .HasPrecision(18, 2);
+
         // Stock configuration
         modelBuilder.Entity<Stock>()
             .HasKey(s => s.Id);
@@ -43,17 +48,35 @@ public class StoxolioDbContext : DbContext
             .HasForeignKey(s => s.CategoryId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        // Decimal precision
-        modelBuilder.Entity<Category>()
-            .Property(c => c.Target)
-            .HasPrecision(18, 2);
-
         modelBuilder.Entity<Stock>()
             .Property(s => s.Price)
-            .HasPrecision(18, 2);
+            .HasPrecision(18, 3);
 
         modelBuilder.Entity<Stock>()
             .Property(s => s.PrevPrice)
-            .HasPrecision(18, 2);
+            .HasPrecision(18, 3);
+
+        // Transaction configuration
+        modelBuilder.Entity<Transaction>()
+            .HasKey(t => t.OrderId);
+
+        modelBuilder.Entity<Transaction>()
+            .HasIndex(t => t.Isin);
+
+        modelBuilder.Entity<Transaction>()
+            .Property(t => t.Price)
+            .HasPrecision(18, 3);
+
+        modelBuilder.Entity<Transaction>()
+            .Property(t => t.Value)
+            .HasPrecision(18, 3);
+
+        modelBuilder.Entity<Transaction>()
+            .Property(t => t.Fees)
+            .HasPrecision(18, 3);
+
+        modelBuilder.Entity<Transaction>()
+            .Property(t => t.Total)
+            .HasPrecision(18, 3);
     }
 }

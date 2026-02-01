@@ -1,48 +1,33 @@
 using Stoxolio.Service.BuildingBlocks.CQRS;
 using Stoxolio.Service.Data;
+using Stoxolio.Service.Models;
 
 namespace Stoxolio.Service.Features.Categories;
 
-public sealed record DeleteCategoryCommand(int Id) : ICommand<bool>;
+public sealed record DeleteCategoryCommand(DeleteCategoryRequest Request) : ICommand<DeleteCategoryResponse>;
 
-public class DeleteCategoryEndpoint
+public sealed record DeleteCategoryRequest
 {
-    private static async Task<IResult> HandleDeleteCategory(
-        int id,
-        StoxolioDbContext context,
-        CancellationToken cancellationToken)
+    public required int Id { get; init; }
+}
+
+public sealed record DeleteCategoryResponse
+{
+    public required Category Category { get; init; }
+};
+
+public class DeleteCategoryHandler(StoxolioDbContext context) : ICommandHandler<DeleteCategoryCommand, DeleteCategoryResponse>
+{
+    public async Task<DeleteCategoryResponse> Handle(DeleteCategoryCommand command, CancellationToken cancellationToken)
     {
-        var handler = new DeleteCategoryHandler(context);
-        var success = await handler.Handle(new DeleteCategoryCommand(id), cancellationToken);
-        return success ? Results.NoContent() : Results.NotFound();
-    }
+        var category = await context.Categories.FindAsync(command.Request.Id, cancellationToken);
 
-    public static void MapEndpoint(RouteGroupBuilder group)
-    {
-        group.MapDelete("/{id}", HandleDeleteCategory)
-            .WithName("DeleteCategory");
-    }
+        if (category == null)
+            throw new InvalidOperationException("Category not found"); // TODO: Implement result pattern
 
-    private class DeleteCategoryHandler : ICommandHandler<DeleteCategoryCommand, bool>
-    {
-        private readonly StoxolioDbContext _context;
+        context.Categories.Remove(category);
+        await context.SaveChangesAsync(cancellationToken);
 
-        public DeleteCategoryHandler(StoxolioDbContext context)
-        {
-            _context = context;
-        }
-
-        public async Task<bool> Handle(DeleteCategoryCommand request, CancellationToken cancellationToken)
-        {
-            var category = await _context.Categories.FindAsync(new object[] { request.Id }, cancellationToken);
-
-            if (category == null)
-                return false;
-
-            _context.Categories.Remove(category);
-            await _context.SaveChangesAsync(cancellationToken);
-
-            return true;
-        }
+        return new DeleteCategoryResponse { Category = category };
     }
 }

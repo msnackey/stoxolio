@@ -2,8 +2,8 @@ namespace Stoxolio.Service.DTOs;
 
 public class CategoryDto
 {
-    public int Id { get; set; }
-    public string Name { get; set; } = string.Empty;
-    public decimal Target { get; set; }
-    public List<StockDto> Stocks { get; set; } = new();
+    public int Id { get; init; }
+    public string Name { get; init; } = string.Empty;
+    public double Target { get; init; }
+    public List<StockDto> Stocks { get; init; } = new();
 }

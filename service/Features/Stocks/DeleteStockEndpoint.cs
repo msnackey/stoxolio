@@ -1,48 +1,33 @@
 using Stoxolio.Service.BuildingBlocks.CQRS;
 using Stoxolio.Service.Data;
+using Stoxolio.Service.Models;
 
 namespace Stoxolio.Service.Features.Stocks;
 
-public sealed record DeleteStockCommand(int Id) : ICommand<bool>;
+public sealed record DeleteStockCommand(DeleteStockRequest Request) : ICommand<DeleteStockResponse>;
 
-public class DeleteStockEndpoint
+public sealed record DeleteStockRequest
 {
-    private static async Task<IResult> HandleDeleteStock(
-        int id,
-        StoxolioDbContext context,
-        CancellationToken cancellationToken)
+    public required int Id { get; init; }
+}
+
+public sealed record DeleteStockResponse
+{
+    public required Stock Stock { get; init; }
+}
+
+public class DeleteStockHandler(StoxolioDbContext context) : ICommandHandler<DeleteStockCommand, DeleteStockResponse>
+{
+    public async Task<DeleteStockResponse> Handle(DeleteStockCommand command, CancellationToken cancellationToken)
     {
-        var handler = new DeleteStockHandler(context);
-        var success = await handler.Handle(new DeleteStockCommand(id), cancellationToken);
-        return success ? Results.NoContent() : Results.NotFound();
-    }
+        var stock = await context.Stocks.FindAsync(command.Request.Id, cancellationToken);
 
-    public static void MapEndpoint(RouteGroupBuilder group)
-    {
-        group.MapDelete("/{id}", HandleDeleteStock)
-            .WithName("DeleteStock");
-    }
+        if (stock == null)
+            throw new InvalidOperationException("Stock not found"); // TODO: Implement result pattern
 
-    private class DeleteStockHandler : ICommandHandler<DeleteStockCommand, bool>
-    {
-        private readonly StoxolioDbContext _context;
+        context.Stocks.Remove(stock);
+        await context.SaveChangesAsync(cancellationToken);
 
-        public DeleteStockHandler(StoxolioDbContext context)
-        {
-            _context = context;
-        }
-
-        public async Task<bool> Handle(DeleteStockCommand request, CancellationToken cancellationToken)
-        {
-            var stock = await _context.Stocks.FindAsync(new object[] { request.Id }, cancellationToken);
-
-            if (stock == null)
-                return false;
-
-            _context.Stocks.Remove(stock);
-            await _context.SaveChangesAsync(cancellationToken);
-
-            return true;
-        }
+        return new DeleteStockResponse { Stock = stock };
     }
 }

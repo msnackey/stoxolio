@@ -5,55 +5,38 @@ using Stoxolio.Service.Models;
 
 namespace Stoxolio.Service.Features.Stocks;
 
-public sealed record CreateStockCommand(StockDto StockDto) : ICommand<StockDto>;
+public sealed record CreateStockCommand(CreateStockRequest Request) : ICommand<CreateStockResponse>;
 
-public class CreateStockEndpoint
+public sealed record CreateStockRequest
 {
-    private static async Task<IResult> HandleCreateStock(
-        StockDto stockDto,
-        StoxolioDbContext context,
-        CancellationToken cancellationToken)
-    {
-        var handler = new CreateStockHandler(context);
-        var result = await handler.Handle(new CreateStockCommand(stockDto), cancellationToken);
-        return Results.CreatedAtRoute("GetStock", new { id = result.Id }, result);
-    }
+    public required StockDto StockDto { get; init; }
+}
 
-    public static void MapEndpoint(RouteGroupBuilder group)
-    {
-        group.MapPost("/", HandleCreateStock)
-            .WithName("CreateStock");
-    }
+public sealed record CreateStockResponse
+{
+    public required Stock Stock { get; init; }
+};
 
-    private class CreateStockHandler : ICommandHandler<CreateStockCommand, StockDto>
+public class CreateStockHandler(StoxolioDbContext context) : ICommandHandler<CreateStockCommand, CreateStockResponse>
+{
+    public async Task<CreateStockResponse> Handle(CreateStockCommand command, CancellationToken cancellationToken)
     {
-        private readonly StoxolioDbContext _context;
-
-        public CreateStockHandler(StoxolioDbContext context)
+        var stock = new Stock
         {
-            _context = context;
-        }
+            Name = command.Request.StockDto.Name,
+            Ticker = command.Request.StockDto.Ticker,
+            Exchange = command.Request.StockDto.Exchange,
+            Sri = command.Request.StockDto.Sri,
+            Shares = command.Request.StockDto.Shares,
+            Price = command.Request.StockDto.Price,
+            Invest = command.Request.StockDto.Invest,
+            CategoryId = command.Request.StockDto.CategoryId,
+            PrevPrice = command.Request.StockDto.PrevPrice // TODO: Remove from DTO and make calculated field in database
+        };
 
-        public async Task<StockDto> Handle(CreateStockCommand request, CancellationToken cancellationToken)
-        {
-            var stock = new Stock
-            {
-                Name = request.StockDto.Name,
-                Ticker = request.StockDto.Ticker,
-                Exchange = request.StockDto.Exchange,
-                Sri = request.StockDto.Sri,
-                Shares = request.StockDto.Shares,
-                Price = request.StockDto.Price,
-                Invest = request.StockDto.Invest,
-                CategoryId = request.StockDto.CategoryId,
-                PrevPrice = request.StockDto.PrevPrice
-            };
+        context.Stocks.Add(stock);
+        await context.SaveChangesAsync(cancellationToken);
 
-            _context.Stocks.Add(stock);
-            await _context.SaveChangesAsync(cancellationToken);
-
-            request.StockDto.Id = stock.Id;
-            return request.StockDto;
-        }
+        return new CreateStockResponse { Stock = stock };
     }
 }

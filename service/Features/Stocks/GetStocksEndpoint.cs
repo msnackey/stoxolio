@@ -1,43 +1,26 @@
 using Microsoft.EntityFrameworkCore;
 using Stoxolio.Service.BuildingBlocks.CQRS;
 using Stoxolio.Service.Data;
-using Stoxolio.Service.DTOs;
+using Stoxolio.Service.Models;
 
 namespace Stoxolio.Service.Features.Stocks;
 
-public sealed record GetStocksQuery : IQuery<List<StockDto>>;
+public sealed record GetStocksQuery : IQuery<GetStocksResponse>;
 
-public class GetStocksEndpoint
+public sealed record GetStocksResponse
 {
-    private static async Task<IResult> HandleGetStocks(
-        StoxolioDbContext context,
-        CancellationToken cancellationToken)
-    {
-        var handler = new GetStocksHandler(context);
-        var result = await handler.Handle(new GetStocksQuery(), cancellationToken);
-        return Results.Ok(result);
-    }
+    public required List<Stock> Stocks { get; init; }
+}
 
-    public static void MapEndpoint(RouteGroupBuilder group)
+public class GetStocksHandler(StoxolioDbContext context) : IQueryHandler<GetStocksQuery, GetStocksResponse>
+{
+    public async Task<GetStocksResponse?> Handle(GetStocksQuery request, CancellationToken cancellationToken)
     {
-        group.MapGet("/", HandleGetStocks)
-            .WithName("GetStocks");
-    }
+        var stocks = await context.Stocks.ToListAsync(cancellationToken);
 
-    private class GetStocksHandler : IQueryHandler<GetStocksQuery, List<StockDto>>
-    {
-        private readonly StoxolioDbContext _context;
-
-        public GetStocksHandler(StoxolioDbContext context)
+        return new GetStocksResponse
         {
-            _context = context;
-        }
-
-        public async Task<List<StockDto>?> Handle(GetStocksQuery request, CancellationToken cancellationToken)
-        {
-            var stocks = await _context.Stocks.ToListAsync(cancellationToken);
-
-            return stocks.Select(s => new StockDto
+            Stocks = stocks.Select(s => new Stock
             {
                 Id = s.Id,
                 Name = s.Name,
@@ -48,11 +31,8 @@ public class GetStocksEndpoint
                 Price = s.Price,
                 Invest = s.Invest,
                 CategoryId = s.CategoryId,
-                PrevPrice = s.PrevPrice,
-                Value = s.Value,
-                PriceChange = s.PriceChange,
-                ValueChange = s.ValueChange
-            }).ToList();
-        }
+                PrevPrice = s.PrevPrice
+            }).ToList()
+        };
     }
 }

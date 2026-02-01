@@ -68,7 +68,7 @@ using (var scope = app.Services.CreateScope())
     // Seed test data if development
     if (app.Environment.IsDevelopment())
     {
-        SeedTestData(db);
+        TestData.SeedTestData(db);
     }
 }
 
@@ -89,77 +89,3 @@ app.UseAuthorization();
 app.MapEndpoints();
 
 app.Run();
-
-// Seed test data
-static void SeedTestData(StoxolioDbContext db)
-{
-    if (db.Users.Any()) return; // Don't seed if users already exist
-
-    // Create test user
-    var testUserPassword = "testpassword123";
-    var passwordHash = BCrypt.Net.BCrypt.EnhancedHashPassword(testUserPassword, 13);
-    
-    var testUser = new Stoxolio.Service.Models.User
-    {
-        Username = "testuser",
-        Email = "test@example.com",
-        PasswordHash = passwordHash,
-        CreatedAt = DateTime.UtcNow
-    };
-
-    db.Users.Add(testUser);
-    db.SaveChanges();
-
-    var categories = new[]
-    {
-        new Stoxolio.Service.Models.Category { Name = "Tech", Target = 10000m },
-        new Stoxolio.Service.Models.Category { Name = "Finance", Target = 5000m },
-        new Stoxolio.Service.Models.Category { Name = "Healthcare", Target = 3000m }
-    };
-
-    db.Categories.AddRange(categories);
-    db.SaveChanges();
-
-    var stocks = new[]
-    {
-        new Stoxolio.Service.Models.Stock
-        {
-            Name = "Apple Inc.",
-            Ticker = "AAPL",
-            Exchange = "NASDAQ",
-            Sri = true,
-            Shares = 100,
-            Price = 150.50m,
-            PrevPrice = 148.00m,
-            Invest = true,
-            CategoryId = 1
-        },
-        new Stoxolio.Service.Models.Stock
-        {
-            Name = "Microsoft Corporation",
-            Ticker = "MSFT",
-            Exchange = "NASDAQ",
-            Sri = true,
-            Shares = 50,
-            Price = 320.00m,
-            PrevPrice = 315.00m,
-            Invest = true,
-            CategoryId = 1
-        },
-        new Stoxolio.Service.Models.Stock
-        {
-            Name = "JPMorgan Chase",
-            Ticker = "JPM",
-            Exchange = "NYSE",
-            Sri = false,
-            Shares = 75,
-            Price = 180.25m,
-            PrevPrice = 178.50m,
-            Invest = true,
-            CategoryId = 2
-        }
-    };
-
-    db.Stocks.AddRange(stocks);
-    db.SaveChanges();
-}

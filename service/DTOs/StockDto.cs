@@ -2,19 +2,19 @@ namespace Stoxolio.Service.DTOs;
 
 public class StockDto
 {
-    public int Id { get; set; }
-    public string Name { get; set; } = string.Empty;
-    public string Ticker { get; set; } = string.Empty;
-    public string Exchange { get; set; } = string.Empty;
-    public bool Sri { get; set; }
-    public int Shares { get; set; }
-    public decimal Price { get; set; }
-    public bool Invest { get; set; }
-    public int CategoryId { get; set; }
-    public decimal PrevPrice { get; set; }
+    public int Id { get; init; }
+    public string Name { get; init; } = string.Empty;
+    public string Ticker { get; init; } = string.Empty;
+    public string Exchange { get; init; } = string.Empty;
+    public bool Sri { get; init; }
+    public int Shares { get; init; }
+    public decimal Price { get; init; }
+    public bool Invest { get; init; }
+    public int CategoryId { get; init; }
+    public decimal PrevPrice { get; init; }
     
     // Computed fields
-    public decimal Value { get; set; }
-    public decimal PriceChange { get; set; }
-    public decimal ValueChange { get; set; }
+    public decimal Value { get; init; }
+    public decimal PriceChange { get; init; }
+    public decimal ValueChange { get; init; }
 }

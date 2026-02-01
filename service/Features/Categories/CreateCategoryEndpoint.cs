@@ -5,48 +5,34 @@ using Stoxolio.Service.Models;
 
 namespace Stoxolio.Service.Features.Categories;
 
-public sealed record CreateCategoryCommand(CategoryDto CategoryDto) : ICommand<CategoryDto>;
+public sealed record CreateCategoryCommand(CreateCategoryRequest Request) : ICommand<CreateCategoryResponse>;
 
-public class CreateCategoryEndpoint
+public sealed record CreateCategoryRequest
 {
-    private static async Task<IResult> HandleCreateCategory(
-        CategoryDto categoryDto,
-        StoxolioDbContext context,
-        CancellationToken cancellationToken)
-    {
-        var handler = new CreateCategoryHandler(context);
-        var result = await handler.Handle(new CreateCategoryCommand(categoryDto), cancellationToken);
-        return Results.CreatedAtRoute("GetCategory", new { id = result.Id }, result);
-    }
+    public required CategoryDto CategoryDto { get; init; }
+}
 
-    public static void MapEndpoint(RouteGroupBuilder group)
-    {
-        group.MapPost("/", HandleCreateCategory)
-            .WithName("CreateCategory");
-    }
+public sealed record CreateCategoryResponse
+{
+    public required Category Category { get; init; }
+};
 
-    private class CreateCategoryHandler : ICommandHandler<CreateCategoryCommand, CategoryDto>
+public class CreateCategoryHandler(StoxolioDbContext context) : ICommandHandler<CreateCategoryCommand, CreateCategoryResponse>
+{
+    public async Task<CreateCategoryResponse> Handle(CreateCategoryCommand command, CancellationToken cancellationToken)
     {
-        private readonly StoxolioDbContext _context;
-
-        public CreateCategoryHandler(StoxolioDbContext context)
+        var category = new Category
         {
-            _context = context;
-        }
+            Name = command.Request.CategoryDto.Name,
+            Target = command.Request.CategoryDto.Target
+        };
 
-        public async Task<CategoryDto> Handle(CreateCategoryCommand request, CancellationToken cancellationToken)
+        context.Categories.Add(category);
+        await context.SaveChangesAsync(cancellationToken);
+
+        return new CreateCategoryResponse
         {
-            var category = new Category
-            {
-                Name = request.CategoryDto.Name,
-                Target = request.CategoryDto.Target
-            };
-
-            _context.Categories.Add(category);
-            await _context.SaveChangesAsync(cancellationToken);
-
-            request.CategoryDto.Id = category.Id;
-            return request.CategoryDto;
-        }
+            Category = category
+        };
     }
 }
