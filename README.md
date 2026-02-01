@@ -6,21 +6,26 @@ A full-stack portfolio management web application built with ASP.NET Core, React
 
 ```
 stoxolio/
-├── service/           # ASP.NET Core backend API
-│   ├── Models/        # Entity models (User, Category, Stock)
-│   ├── Controllers/   # API endpoints
-│   ├── Data/          # DbContext and migrations
-│   ├── Services/      # Business logic (auth, etc.)
-│   ├── DTOs/          # Data transfer objects
+├── service/                # ASP.NET Core backend API (CQRS with Minimal APIs)
+│   ├── Auth/               # Authentication service (first-class service)
+│   ├── Features/           # Domain features organized by concern
+│   ├── Endpoints/          # Centralized endpoint mapping
+│   ├── BuildingBlocks/
+│   │   └── CQRS/           # CQRS abstractions
+│   ├── Extensions/         # Extension methods
+│   ├── Models/             # Entity models (User, Category, Stock)
+│   ├── Data/               # DbContext
+│   ├── DTOs/               # Data transfer objects
 │   ├── appsettings.json
 │   ├── appsettings.Development.json
 │   └── Program.cs
-├── client/            # React + TypeScript frontend with Vite
+├── client/                 # React + TypeScript frontend with Vite
 │   ├── src/
-│   │   ├── components/  # React components
-│   │   ├── pages/       # Page components
-│   │   ├── services/    # API client, auth context
-│   │   ├── types/       # TypeScript interfaces
+│   │   ├── components/     # React components
+│   │   ├── pages/          # Page components
+│   │   ├── context/        # Auth context
+│   │   ├── services/       # API client
+│   │   ├── types/          # TypeScript interfaces
 │   │   └── App.tsx
 │   ├── .env
 │   └── vite.config.ts
@@ -31,7 +36,7 @@ stoxolio/
 
 ## Requirements
 
-- **.NET 10 SDK** (10.0.102 or later)
+- **.NET 10 SDK** (10.0.0 or later with rollForward latestMinor)
 - **Node.js 18** or later
 - **npm** or **yarn**
 
@@ -133,7 +138,27 @@ In development mode, the following test user and data are automatically created:
 - Microsoft (MSFT) - 50 shares @ $320.00 - Tech category
 - JPMorgan Chase (JPM) - 75 shares @ $180.25 - Finance category
 
-## API Endpoints
+## Architecture
+
+### Backend: CQRS with Minimal APIs
+
+The backend uses the **Command Query Responsibility Segregation (CQRS)** pattern with ASP.NET Core's minimal APIs (no traditional MVC controllers):
+
+- **Auth Service**: First-class service handling authentication and JWT token generation
+- **Features**: Organized by domain concern (Categories, Stocks) with feature-specific folders
+- **Endpoints**: Individual endpoint classes per operation, mapped centrally in `Endpoints/` directory
+- **CQRS Pattern**: 
+  - **Queries** (IQuery<TResponse>) for read operations with IQueryHandler implementations
+  - **Commands** (ICommand<TResponse>) for write operations with ICommandHandler implementations
+- **Minimal APIs**: All endpoints registered via extension methods in Program.cs for streamlined configuration
+
+This architecture improves:
+- **Maintainability**: Each endpoint is in its own file with clear responsibility
+- **Testability**: Query/command handlers can be tested independently
+- **Scalability**: Easy to add new endpoints or features following established patterns
+- **Separation of Concerns**: Auth is elevated to infrastructure level, features handle domain logic
+
+
 
 ### Authentication
 - `POST /api/auth/register` — Register a new user
@@ -188,12 +213,3 @@ npm run build
 ```
 
 The built frontend files will be in `client/dist/` and can be served by the backend or a static file server.
-
-## Future Enhancements
-
-- Password reset functionality
-- User profile management
-- Advanced portfolio analytics
-- Export portfolio data (CSV, PDF)
-- Dark mode UI
-- Mobile responsive design
