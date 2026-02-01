@@ -1,6 +1,103 @@
-@Stoxolio.Service_HostAddress = http://localhost:5001
+@baseUrl = http://localhost:5001
+@AuthToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjEiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoidGVzdHVzZXIiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJ0ZXN0QGV4YW1wbGUuY29tIiwiZXhwIjoxNzcwMDI3MjU2LCJpc3MiOiJzdG94b2xpbyIsImF1ZCI6InN0b3hvbGlvLWNsaWVudCJ9.gLXkklGjvA6WoKk70YyI4zZvYeyzdxRJCIdtlO9JoTs
 
-GET {{Stoxolio.Service_HostAddress}}/weatherforecast/
+### Login with test user
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "testuser",
+  "password": "testpassword123"
+}
+
+### Register new user
+POST {{baseUrl}}/api/auth/register
+Content-Type: application/json
+
+{
+  "username": "newuser",
+  "email": "newuser@example.com",
+  "password": "password123"
+}
+
+### Get all categories
+GET {{baseUrl}}/api/categories
+Authorization: Bearer {{AuthToken}}
 Accept: application/json
 
-###
+### Get specific category (ID: 1)
+GET {{baseUrl}}/api/categories/1
+Authorization: Bearer {{AuthToken}}
+Accept: application/json
+
+### Create new category
+POST {{baseUrl}}/api/categories
+Authorization: Bearer {{AuthToken}}
+Content-Type: application/json
+
+{
+  "name": "Real Estate",
+  "target": 50000.00
+}
+
+### Update category (ID: 1)
+PUT {{baseUrl}}/api/categories/1
+Authorization: Bearer {{AuthToken}}
+Content-Type: application/json
+
+{
+  "name": "Tech Updated",
+  "target": 15000.00
+}
+
+### Delete category (ID: 3)
+DELETE {{baseUrl}}/api/categories/3
+Authorization: Bearer {{AuthToken}}
+
+### Get all stocks
+GET {{baseUrl}}/api/stocks
+Authorization: Bearer {{AuthToken}}
+Accept: application/json
+
+### Get specific stock (ID: 1 - AAPL)
+GET {{baseUrl}}/api/stocks/1
+Authorization: Bearer {{AuthToken}}
+Accept: application/json
+
+### Create new stock
+POST {{baseUrl}}/api/stocks
+Authorization: Bearer {{AuthToken}}
+Content-Type: application/json
+
+{
+  "name": "Tesla Inc.",
+  "ticker": "TSLA",
+  "exchange": "NASDAQ",
+  "sri": true,
+  "shares": 25,
+  "price": 250.00,
+  "prevPrice": 245.00,
+  "invest": true,
+  "categoryId": 1
+}
+
+### Update stock (ID: 1 - AAPL)
+PUT {{baseUrl}}/api/stocks/1
+Authorization: Bearer {{AuthToken}}
+Content-Type: application/json
+
+{
+  "name": "Apple Inc.",
+  "ticker": "AAPL",
+  "exchange": "NASDAQ",
+  "sri": true,
+  "shares": 120,
+  "price": 155.00,
+  "prevPrice": 150.50,
+  "invest": true,
+  "categoryId": 1
+}
+
+### Delete stock (ID: 3 - JPM)
+DELETE {{baseUrl}}/api/stocks/3
+Authorization: Bearer {{AuthToken}}

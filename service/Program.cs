@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Stoxolio.Service.Data;
+using Stoxolio.Service.Extensions;
 using Stoxolio.Service.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -84,7 +85,8 @@ app.UseCors("AllowFrontend");
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapControllers();
+// Map Endpoints
+app.MapEndpoints();
 
 app.Run();
 

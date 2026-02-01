@@ -1,0 +1,1 @@
+namespace Stoxolio.Service.Endpoints;
