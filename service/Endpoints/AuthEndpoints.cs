@@ -1,5 +1,4 @@
 using Stoxolio.Service.Auth;
-using Stoxolio.Service.BuildingBlocks.CQRS;
 using Stoxolio.Service.DTOs;
 
 namespace Stoxolio.Service.Endpoints;
@@ -13,18 +12,11 @@ public static class AuthEndpoints
 
         group.MapPost("/login", async (
                 LoginRequest request,
-                ICommandHandler<LoginCommand, AuthResponse> handler,
-                AuthService authService,
+                IAuthService authService,
                 CancellationToken cancellationToken) =>
             {
-                var result = await handler.Handle(new LoginCommand(request), cancellationToken);
-
-                return Results.Ok(result);
-
-                // TODO: Implement Results class
-                // return result.IsSuccess
-                //     ? Results.Ok(result.Value)
-                //     : ApiResults.Problem(result);
+                var (success, message, token) = await authService.LoginAsync(request.Username, request.Password);
+                return Results.Ok(new AuthResponse { Success = success, Message = message, Token = token });
             })
             .WithName("Login")
             .WithDescription("User login endpoint.")
@@ -35,18 +27,11 @@ public static class AuthEndpoints
 
         group.MapPost("/register", async (
                 RegisterRequest request,
-                ICommandHandler<RegisterCommand, AuthResponse> handler,
-                AuthService authService,
+                IAuthService authService,
                 CancellationToken cancellationToken) =>
             {
-                var result = await handler.Handle(new RegisterCommand(request), cancellationToken);
-                
-                return Results.Ok(result);
-
-                // TODO: Implement Results class
-                // return result.IsSuccess
-                //     ? Results.Ok(result.Value)
-                //     : ApiResults.Problem(result);
+                var (success, message, token) = await authService.RegisterAsync(request.Username, request.Email, request.Password);
+                return Results.Ok(new AuthResponse { Success = success, Message = message, Token = token });
             })
             .WithName("Register")
             .WithDescription("User registration endpoint.")

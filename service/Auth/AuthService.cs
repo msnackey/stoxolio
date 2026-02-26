@@ -14,24 +14,15 @@ public interface IAuthService
     Task<(bool success, string message, string? token)> LoginAsync(string username, string password);
 }
 
-public class AuthService : IAuthService
+public class AuthService(StoxolioDbContext context, IConfiguration configuration) : IAuthService
 {
-    private readonly StoxolioDbContext _context;
-    private readonly IConfiguration _configuration;
-
-    public AuthService(StoxolioDbContext context, IConfiguration configuration)
-    {
-        _context = context;
-        _configuration = configuration;
-    }
-
     public async Task<(bool success, string message, string? token)> RegisterAsync(string username, string email, string password)
     {
         // Check if user already exists
-        if (await _context.Users.AnyAsync(u => u.Username == username))
+        if (await context.Users.AnyAsync(u => u.Username == username))
             return (false, "Username already exists", null);
 
-        if (await _context.Users.AnyAsync(u => u.Email == email))
+        if (await context.Users.AnyAsync(u => u.Email == email))
             return (false, "Email already exists", null);
 
         // Hash password
@@ -46,8 +37,8 @@ public class AuthService : IAuthService
             CreatedAt = DateTime.UtcNow
         };
 
-        _context.Users.Add(user);
-        await _context.SaveChangesAsync();
+        context.Users.Add(user);
+        await context.SaveChangesAsync();
 
         // Generate token
         var token = GenerateJwtToken(user);
@@ -57,7 +48,7 @@ public class AuthService : IAuthService
 
     public async Task<(bool success, string message, string? token)> LoginAsync(string username, string password)
     {
-        var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
+        var user = await context.Users.FirstOrDefaultAsync(u => u.Username == username);
 
         if (user == null)
             return (false, "Invalid credentials", null);
@@ -74,7 +65,7 @@ public class AuthService : IAuthService
 
     private string GenerateJwtToken(User user)
     {
-        var jwtSettings = _configuration.GetSection("JwtSettings");
+        var jwtSettings = configuration.GetSection("JwtSettings");
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["SecretKey"]!));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
