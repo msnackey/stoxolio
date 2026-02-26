@@ -1,5 +1,4 @@
 using Stoxolio.Service.BuildingBlocks.CQRS;
-using Stoxolio.Service.Data;
 using Stoxolio.Service.Features.Stocks;
 
 namespace Stoxolio.Service.Endpoints;
@@ -14,7 +13,6 @@ public static class StocksEndpoints
 
         group.MapGet("/", async (
                 IQueryHandler<GetStocksQuery, GetStocksResponse> handler,
-                StoxolioDbContext context,
                 CancellationToken cancellationToken) =>
             {
                 var result = await handler.Handle(new GetStocksQuery(), cancellationToken);
@@ -36,7 +34,6 @@ public static class StocksEndpoints
         group.MapPost("/", async (
                 CreateStockRequest request,
                 ICommandHandler<CreateStockCommand, CreateStockResponse> handler,
-                StoxolioDbContext context,
                 CancellationToken cancellationToken) =>
             {
                 var result = await handler.Handle(new CreateStockCommand(request), cancellationToken);
@@ -58,7 +55,6 @@ public static class StocksEndpoints
         group.MapPost("/delete/", async (
                 DeleteStockRequest request,
                 ICommandHandler<DeleteStockCommand, DeleteStockResponse> handler,
-                StoxolioDbContext context,
                 CancellationToken cancellationToken) =>
             {
                 var result = await handler.Handle(new DeleteStockCommand(request), cancellationToken);
@@ -80,7 +76,6 @@ public static class StocksEndpoints
         group.MapPut("/", async (
                 UpdateStockRequest request,
                 ICommandHandler<UpdateStockCommand, UpdateStockResponse> handler,
-                StoxolioDbContext context,
                 CancellationToken cancellationToken) =>
             {
                 var result = await handler.Handle(new UpdateStockCommand(request), cancellationToken);

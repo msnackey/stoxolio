@@ -1,5 +1,4 @@
 using Stoxolio.Service.BuildingBlocks.CQRS;
-using Stoxolio.Service.Data;
 using Stoxolio.Service.Features.Categories;
 
 namespace Stoxolio.Service.Endpoints;
@@ -14,7 +13,6 @@ public static class CategoriesEndpoints
 
         group.MapGet("/", async (
                 IQueryHandler<GetCategoriesQuery, GetCategoriesResponse> handler,
-                StoxolioDbContext context,
                 CancellationToken cancellationToken) =>
             {
                 var result = await handler.Handle(new GetCategoriesQuery(), cancellationToken);
@@ -36,7 +34,6 @@ public static class CategoriesEndpoints
         group.MapPost("/", async (
                 CreateCategoryRequest request,
                 ICommandHandler<CreateCategoryCommand, CreateCategoryResponse> handler,
-                StoxolioDbContext context,
                 CancellationToken cancellationToken) =>
             {
                 var result = await handler.Handle(new CreateCategoryCommand(request), cancellationToken);
@@ -58,7 +55,6 @@ public static class CategoriesEndpoints
         group.MapPost("/delete/", async (
                 DeleteCategoryRequest request,
                 ICommandHandler<DeleteCategoryCommand, DeleteCategoryResponse> handler,
-                StoxolioDbContext context,
                 CancellationToken cancellationToken) =>
             {
                 var result = await handler.Handle(new DeleteCategoryCommand(request), cancellationToken);
@@ -80,7 +76,6 @@ public static class CategoriesEndpoints
         group.MapPut("/", async (
                 UpdateCategoryRequest request,
                 ICommandHandler<UpdateCategoryCommand, UpdateCategoryResponse> handler,
-                StoxolioDbContext context,
                 CancellationToken cancellationToken) =>
             {
                 var result = await handler.Handle(new UpdateCategoryCommand(request), cancellationToken);

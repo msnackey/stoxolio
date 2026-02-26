@@ -1,8 +1,3 @@
-using System.Text;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using Stoxolio.Service.Auth;
 using Stoxolio.Service.Data;
 using Stoxolio.Service.Extensions;
 
@@ -11,36 +6,6 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
-
-// Add DbContext
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-builder.Services.AddDbContext<StoxolioDbContext>(options =>
-    options.UseSqlite(connectionString)
-);
-
-// Add Authentication
-var jwtSettings = builder.Configuration.GetSection("JwtSettings");
-var secretKey = jwtSettings["SecretKey"]!;
-var key = Encoding.UTF8.GetBytes(secretKey);
-
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-})
-.AddJwtBearer(options =>
-{
-    options.TokenValidationParameters = new TokenValidationParameters
-    {
-        ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new SymmetricSecurityKey(key),
-        ValidateIssuer = true,
-        ValidIssuer = jwtSettings["Issuer"],
-        ValidateAudience = true,
-        ValidAudience = jwtSettings["Audience"],
-        ValidateLifetime = true
-    };
-});
 
 // Add CORS
 builder.Services.AddCors(options =>
@@ -54,8 +19,8 @@ builder.Services.AddCors(options =>
     });
 });
 
-// Add Services
-builder.Services.AddScoped<IAuthService, AuthService>();
+// Add Dependencies
+builder.Services.AddDependencies(builder.Configuration);
 
 var app = builder.Build();
 
