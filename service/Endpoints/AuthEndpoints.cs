@@ -1,5 +1,6 @@
 using Stoxolio.Service.Auth;
 using Stoxolio.Service.DTOs;
+using Stoxolio.Service.Extensions;
 
 namespace Stoxolio.Service.Endpoints;
 
@@ -22,8 +23,10 @@ public static class AuthEndpoints
             })
             .WithName("Login")
             .WithDescription("User login endpoint.")
+            .RequireRateLimiting(DependencyInjection.LoginRateLimitPolicy)
             .Produces<AuthResponse>(200)
             .ProducesProblem(401)
+            .ProducesProblem(429)
             .ProducesProblem(500)
             .ProducesProblem(502);
 

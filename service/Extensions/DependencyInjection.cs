@@ -1,6 +1,8 @@
 using System.Reflection;
 using System.Text;
+using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Stoxolio.Service.Auth;
@@ -11,9 +13,12 @@ namespace Stoxolio.Service.Extensions;
 
 public static class DependencyInjection
 {
+    public const string LoginRateLimitPolicy = "login";
+
     public static IServiceCollection AddDependencies(this IServiceCollection services, IConfiguration configuration)
         => services
             .AddAuthentication(configuration)
+            .AddLoginRateLimiting()
             .AddDbContext(configuration)
             .AddServices()
             .AddFeatures();
@@ -47,6 +52,22 @@ public static class DependencyInjection
                 };
             });
 
+        return services;
+    }
+
+    private static IServiceCollection AddLoginRateLimiting(this IServiceCollection services)
+    {
+        services.AddRateLimiter(options =>
+        {
+            options.AddFixedWindowLimiter(LoginRateLimitPolicy, limiter =>
+            {
+                limiter.Window = TimeSpan.FromMinutes(1);
+                limiter.PermitLimit = 10;
+                limiter.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+                limiter.QueueLimit = 0;
+            });
+            options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+        });
         return services;
     }
 

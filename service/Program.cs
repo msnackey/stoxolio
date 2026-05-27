@@ -12,7 +12,8 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins("http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:3000", "http://127.0.0.1:3000")
+        policy.WithOrigins("http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:3000",
+                "http://127.0.0.1:3000")
             .AllowAnyMethod()
             .AllowAnyHeader()
             .AllowCredentials();
@@ -29,7 +30,7 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<StoxolioDbContext>();
     db.Database.EnsureCreated();
-    
+
     // Seed test data if development
     if (app.Environment.IsDevelopment())
     {
@@ -46,7 +47,9 @@ else
 {
     app.UseHttpsRedirection();
 }
+
 app.UseCors("AllowFrontend");
+app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 
