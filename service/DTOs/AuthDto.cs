@@ -17,5 +17,5 @@ public class AuthResponse
 {
     public bool Success { get; init; }
     public string Message { get; init; } = string.Empty;
-    public string? Token { get; init; }
+    public string? Username { get; init; }
 }

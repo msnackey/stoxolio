@@ -50,6 +50,14 @@ public static class DependencyInjection
                     ValidAudience = jwtSettings["Audience"],
                     ValidateLifetime = true
                 };
+                options.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = context =>
+                    {
+                        context.Token = context.Request.Cookies["auth_token"];
+                        return Task.CompletedTask;
+                    }
+                };
             });
 
         return services;

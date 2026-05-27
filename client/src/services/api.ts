@@ -1,27 +1,34 @@
 import axios, { type AxiosInstance } from 'axios';
 import type { Category, Stock, AuthResponse } from '../types';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 
 class ApiClient {
     private client: AxiosInstance;
+    private onUnauthorized?: () => void;
 
     constructor() {
         this.client = axios.create({
             baseURL: API_BASE_URL,
+            withCredentials: true,
             headers: {
                 'Content-Type': 'application/json',
             },
         });
 
-        // Add JWT token to headers if available
-        this.client.interceptors.request.use((config) => {
-            const token = localStorage.getItem('auth_token');
-            if (token) {
-                config.headers.Authorization = `Bearer ${token}`;
+        this.client.interceptors.response.use(
+            (response) => response,
+            (error) => {
+                if (error.response?.status === 401 && this.onUnauthorized) {
+                    this.onUnauthorized();
+                }
+                return Promise.reject(error);
             }
-            return config;
-        });
+        );
+    }
+
+    setUnauthorizedHandler(handler: () => void) {
+        this.onUnauthorized = handler;
     }
 
     // Auth endpoints
@@ -40,6 +47,10 @@ class ApiClient {
             password,
         });
         return response.data;
+    }
+
+    async logout(): Promise<void> {
+        await this.client.post('/auth/logout');
     }
 
     // Category endpoints
