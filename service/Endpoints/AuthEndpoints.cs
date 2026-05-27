@@ -16,12 +16,14 @@ public static class AuthEndpoints
                 CancellationToken cancellationToken) =>
             {
                 var (success, message, token) = await authService.LoginAsync(request.Username, request.Password);
-                return Results.Ok(new AuthResponse { Success = success, Message = message, Token = token });
+                if (!success)
+                    return Results.Unauthorized();
+                return Results.Ok(new AuthResponse { Success = true, Message = message, Token = token });
             })
             .WithName("Login")
             .WithDescription("User login endpoint.")
             .Produces<AuthResponse>(200)
-            .ProducesProblem(400)
+            .ProducesProblem(401)
             .ProducesProblem(500)
             .ProducesProblem(502);
 
@@ -30,13 +32,16 @@ public static class AuthEndpoints
                 IAuthService authService,
                 CancellationToken cancellationToken) =>
             {
-                var (success, message, token) = await authService.RegisterAsync(request.Username, request.Email, request.Password);
-                return Results.Ok(new AuthResponse { Success = success, Message = message, Token = token });
+                var (success, message, token) =
+                    await authService.RegisterAsync(request.Username, request.Email, request.Password);
+                if (!success)
+                    return Results.Conflict(new AuthResponse { Success = false, Message = message });
+                return Results.Ok(new AuthResponse { Success = true, Message = message, Token = token });
             })
             .WithName("Register")
             .WithDescription("User registration endpoint.")
             .Produces<AuthResponse>(200)
-            .ProducesProblem(400)
+            .ProducesProblem(409)
             .ProducesProblem(500)
             .ProducesProblem(502);
     }
