@@ -22,7 +22,10 @@ public static class DependencyInjection
     {
         // Add Authentication
         var jwtSettings = configuration.GetSection("JwtSettings");
-        var secretKey = jwtSettings["SecretKey"]!;
+        var secretKey = jwtSettings["SecretKey"];
+        if (string.IsNullOrWhiteSpace(secretKey))
+            throw new InvalidOperationException(
+                "JwtSettings:SecretKey is not configured. Use user-secrets (dev) or an environment variable (prod).");
         var key = Encoding.UTF8.GetBytes(secretKey);
 
         services.AddAuthentication(options =>
@@ -43,7 +46,7 @@ public static class DependencyInjection
                     ValidateLifetime = true
                 };
             });
-        
+
         return services;
     }
 
@@ -62,7 +65,7 @@ public static class DependencyInjection
 
         return services;
     }
-    
+
     private static IServiceCollection AddFeatures(this IServiceCollection services)
     {
         var assembly = Assembly.GetExecutingAssembly();
@@ -70,17 +73,17 @@ public static class DependencyInjection
         var handlerTypes = assembly.GetTypes()
             .Where(t => t.IsClass && !t.IsAbstract)
             .Where(t => t.GetInterfaces()
-                .Any(i => i.IsGenericType && 
-                          (i.GetGenericTypeDefinition() == typeof(ICommandHandler<,>) || 
+                .Any(i => i.IsGenericType &&
+                          (i.GetGenericTypeDefinition() == typeof(ICommandHandler<,>) ||
                            i.GetGenericTypeDefinition() == typeof(IQueryHandler<,>))))
             .ToList();
 
         foreach (var handlerType in handlerTypes)
         {
             var interfaces = handlerType.GetInterfaces()
-                .Where(i => i.IsGenericType && 
-                          (i.GetGenericTypeDefinition() == typeof(ICommandHandler<,>) || 
-                           i.GetGenericTypeDefinition() == typeof(IQueryHandler<,>)));
+                .Where(i => i.IsGenericType &&
+                            (i.GetGenericTypeDefinition() == typeof(ICommandHandler<,>) ||
+                             i.GetGenericTypeDefinition() == typeof(IQueryHandler<,>)));
 
             foreach (var @interface in interfaces)
             {
