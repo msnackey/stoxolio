@@ -1,38 +1,50 @@
+using Stoxolio.Service.BuildingBlocks.Common;
 using Stoxolio.Service.BuildingBlocks.CQRS;
 using Stoxolio.Service.Data;
-using Stoxolio.Service.Models;
+using Stoxolio.Service.DTOs;
+using Stoxolio.Service.Mappings;
 
 namespace Stoxolio.Service.Features.Categories;
 
 public sealed record UpdateCategoryCommand(UpdateCategoryRequest Request) : ICommand<UpdateCategoryResponse>;
 
-public sealed record UpdateCategoryRequest
-{
-    public required int Id { get; init; }
-    public string? Name { get; init; }
-    public double? Target { get; init; }
-}
+public sealed record UpdateCategoryRequest(int Id, string? Name = null, double? Target = null);
 
-public sealed record UpdateCategoryResponse
-{
-    public required Category Category { get; init; }
-}
+public sealed record UpdateCategoryResponse(CategoryDto Category);
 
-public class UpdateCategoryHandler(StoxolioDbContext context) : ICommandHandler<UpdateCategoryCommand, UpdateCategoryResponse>
+public class UpdateCategoryHandler(StoxolioDbContext context)
+    : ICommandHandler<UpdateCategoryCommand, UpdateCategoryResponse>
 {
-    public async Task<UpdateCategoryResponse> Handle(UpdateCategoryCommand command, CancellationToken cancellationToken)
+    public async Task<Result<UpdateCategoryResponse>> Handle(UpdateCategoryCommand command,
+        CancellationToken cancellationToken)
     {
-        var category = await context.Categories.FindAsync(command.Request.Id, cancellationToken);
+        try
+        {
+            var category =
+                await context.Categories.FindAsync([command.Request.Id], cancellationToken);
 
-        if (category == null)
-            throw new InvalidOperationException("Category not found"); // TODO: Implement result pattern
+            if (category == null)
+                return Result.Failure<UpdateCategoryResponse>(
+                    new Error(
+                        "UpdateCategory.NotFound",
+                        "Category not found.",
+                        ErrorType.NotFound));
 
-        category.Name = command.Request.Name ?? category.Name;
-        category.Target = command.Request.Target ?? category.Target;
+            category.Name = command.Request.Name ?? category.Name;
+            category.Target = command.Request.Target ?? category.Target;
 
-        context.Categories.Update(category);
-        await context.SaveChangesAsync(cancellationToken);
+            context.Categories.Update(category);
+            await context.SaveChangesAsync(cancellationToken);
 
-        return new UpdateCategoryResponse { Category = category };
+            return Result.Success(new UpdateCategoryResponse(category.ToDto()));
+        }
+        catch
+        {
+            return Result.Failure<UpdateCategoryResponse>(
+                new Error(
+                    "UpdateCategory.Failed",
+                    "Failed trying to update category.",
+                    ErrorType.Problem));
+        }
     }
 }

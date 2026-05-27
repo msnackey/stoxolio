@@ -1,38 +1,33 @@
 using Microsoft.EntityFrameworkCore;
+using Stoxolio.Service.BuildingBlocks.Common;
 using Stoxolio.Service.BuildingBlocks.CQRS;
 using Stoxolio.Service.Data;
-using Stoxolio.Service.Models;
+using Stoxolio.Service.DTOs;
+using Stoxolio.Service.Mappings;
 
 namespace Stoxolio.Service.Features.Stocks;
 
 public sealed record GetStocksQuery : IQuery<GetStocksResponse>;
 
-public sealed record GetStocksResponse
-{
-    public required List<Stock> Stocks { get; init; }
-}
+public sealed record GetStocksResponse(List<StockDto> Stocks);
 
 public class GetStocksHandler(StoxolioDbContext context) : IQueryHandler<GetStocksQuery, GetStocksResponse>
 {
-    public async Task<GetStocksResponse?> Handle(GetStocksQuery request, CancellationToken cancellationToken)
+    public async Task<Result<GetStocksResponse>> Handle(GetStocksQuery request, CancellationToken cancellationToken)
     {
-        var stocks = await context.Stocks.ToListAsync(cancellationToken);
-
-        return new GetStocksResponse
+        try
         {
-            Stocks = stocks.Select(s => new Stock
-            {
-                Id = s.Id,
-                Name = s.Name,
-                Ticker = s.Ticker,
-                Exchange = s.Exchange,
-                Sri = s.Sri,
-                Shares = s.Shares,
-                Price = s.Price,
-                Invest = s.Invest,
-                CategoryId = s.CategoryId,
-                PrevPrice = s.PrevPrice
-            }).ToList()
-        };
+            var stocks = await context.Stocks.ToListAsync(cancellationToken);
+
+            return Result.Success(new GetStocksResponse(stocks.Select(s => s.ToDto()).ToList()));
+        }
+        catch
+        {
+            return Result.Failure<GetStocksResponse>(
+                new Error(
+                    "GetStocks.Failed",
+                    "Failed trying to get stocks.",
+                    ErrorType.Problem));
+        }
     }
 }

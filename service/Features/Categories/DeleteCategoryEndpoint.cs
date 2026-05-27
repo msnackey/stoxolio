@@ -1,33 +1,47 @@
+using Stoxolio.Service.BuildingBlocks.Common;
 using Stoxolio.Service.BuildingBlocks.CQRS;
 using Stoxolio.Service.Data;
-using Stoxolio.Service.Models;
+using Stoxolio.Service.DTOs;
+using Stoxolio.Service.Mappings;
 
 namespace Stoxolio.Service.Features.Categories;
 
 public sealed record DeleteCategoryCommand(DeleteCategoryRequest Request) : ICommand<DeleteCategoryResponse>;
 
-public sealed record DeleteCategoryRequest
-{
-    public required int Id { get; init; }
-}
+public sealed record DeleteCategoryRequest(int Id);
 
-public sealed record DeleteCategoryResponse
-{
-    public required Category Category { get; init; }
-};
+public sealed record DeleteCategoryResponse(CategoryDto Category);
 
-public class DeleteCategoryHandler(StoxolioDbContext context) : ICommandHandler<DeleteCategoryCommand, DeleteCategoryResponse>
+public class DeleteCategoryHandler(StoxolioDbContext context)
+    : ICommandHandler<DeleteCategoryCommand, DeleteCategoryResponse>
 {
-    public async Task<DeleteCategoryResponse> Handle(DeleteCategoryCommand command, CancellationToken cancellationToken)
+    public async Task<Result<DeleteCategoryResponse>> Handle(DeleteCategoryCommand command,
+        CancellationToken cancellationToken)
     {
-        var category = await context.Categories.FindAsync(command.Request.Id, cancellationToken);
+        try
+        {
+            var category =
+                await context.Categories.FindAsync([command.Request.Id], cancellationToken);
 
-        if (category == null)
-            throw new InvalidOperationException("Category not found"); // TODO: Implement result pattern
+            if (category == null)
+                return Result.Failure<DeleteCategoryResponse>(
+                    new Error(
+                        "DeleteCategory.NotFound",
+                        "Category not found.",
+                        ErrorType.NotFound));
 
-        context.Categories.Remove(category);
-        await context.SaveChangesAsync(cancellationToken);
+            context.Categories.Remove(category);
+            await context.SaveChangesAsync(cancellationToken);
 
-        return new DeleteCategoryResponse { Category = category };
+            return Result.Success(new DeleteCategoryResponse(category.ToDto()));
+        }
+        catch
+        {
+            return Result.Failure<DeleteCategoryResponse>(
+                new Error(
+                    "DeleteCategory.Failed",
+                    "Failed trying to delete category.",
+                    ErrorType.Problem));
+        }
     }
 }
