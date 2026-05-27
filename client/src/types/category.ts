@@ -1,4 +1,4 @@
-import type Stock from "./Stock";
+import type Stock from "./stock";
 
 export default interface Category {
     id: number;

@@ -1,0 +1,41 @@
+import {
+    Group,
+    LoadingOverlay,
+    AppShell as Shell,
+    Stack
+} from "@mantine/core";
+
+const headerFullHeight = 128;
+const topHeaderHeight = 32;
+const borderRadius = 16;
+
+export default function AppShellLoader() {
+    return (
+        <Shell header={{ height: headerFullHeight }}>
+            <Shell.Header withBorder={false}>
+                <Stack gap={0}>
+                    {/* Top header */}
+                    <Group h={topHeaderHeight} bg="orange">
+                        <Group
+                            bg="primary"
+                            w="74%"
+                            h="100%"
+                            styles={{
+                                root: { borderBottomRightRadius: borderRadius }
+                            }}
+                        />
+                    </Group>
+                </Stack>
+            </Shell.Header>
+
+            <Shell.Main bg="white.1">
+                <LoadingOverlay
+                    visible
+                    zIndex={1000}
+                    overlayProps={{ blur: 2 }}
+                    loaderProps={{ size: "lg" }}
+                />
+            </Shell.Main>
+        </Shell>
+    );
+}

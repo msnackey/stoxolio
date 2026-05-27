@@ -1,5 +1,5 @@
 import apiClient from '../../../lib/axios/apiClient';
-import type Category from "../../../types/Category";
+import type Category from "../../../types/category";
 
 export interface UpdateCategoryRequest {
     category: Category;

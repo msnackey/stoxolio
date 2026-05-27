@@ -1,5 +1,5 @@
 import apiClient from '../../../lib/axios/apiClient';
-import type Stock from "../../../types/Stock";
+import type Stock from "../../../types/stock";
 
 export interface GetStocksResponse {
     stocks: Stock[];
