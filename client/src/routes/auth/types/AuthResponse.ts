@@ -1,5 +1,5 @@
 export default interface AuthResponse {
-    success: boolean;
-    message: string;
-    username?: string;
+  success: boolean
+  message: string
+  username?: string
 }

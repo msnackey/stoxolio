@@ -1,19 +1,21 @@
-import apiClient from '../../../lib/axios/apiClient';
-import type Stock from "../../../types/stock";
+import apiClient from '../../../lib/axios/apiClient'
+import type Stock from '../../../types/stock'
 
 export interface CreateStockRequest {
-    stock: Stock;
+  stock: Stock
 }
 
 export interface CreateStockResponse {
-    stock: Stock;
+  stock: Stock
 }
 
-export default async function createStock(request: CreateStockRequest): Promise<CreateStockResponse> {
-    try {
-        const response = await apiClient.post<CreateStockResponse>('/stocks', request);
-        return response.data;
-    } catch (error) {
-        return Promise.reject(error);
-    }
+export default async function createStock(
+  request: CreateStockRequest,
+): Promise<CreateStockResponse> {
+  try {
+    const response = await apiClient.post<CreateStockResponse>('/stocks', request)
+    return response.data
+  } catch (error) {
+    return Promise.reject(error)
+  }
 }

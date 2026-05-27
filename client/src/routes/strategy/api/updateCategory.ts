@@ -1,19 +1,21 @@
-import apiClient from '../../../lib/axios/apiClient';
-import type Category from "../../../types/category";
+import apiClient from '../../../lib/axios/apiClient'
+import type Category from '../../../types/category'
 
 export interface UpdateCategoryRequest {
-    category: Category;
+  category: Category
 }
 
 export interface UpdateCategoryResponse {
-    category: Category;
+  category: Category
 }
 
-export default async function updateCategory(request: UpdateCategoryRequest): Promise<UpdateCategoryResponse> {
-    try {
-        const response = await apiClient.put<UpdateCategoryResponse>('/categories', request);
-        return response.data;
-    } catch (error) {
-        return Promise.reject(error);
-    }
+export default async function updateCategory(
+  request: UpdateCategoryRequest,
+): Promise<UpdateCategoryResponse> {
+  try {
+    const response = await apiClient.put<UpdateCategoryResponse>('/categories', request)
+    return response.data
+  } catch (error) {
+    return Promise.reject(error)
+  }
 }

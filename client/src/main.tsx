@@ -1,21 +1,20 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
-import { RouterProvider } from 'react-router-dom';
-import { MantineProvider } from '@mantine/core';
-import { AuthProvider } from './routes/auth/AuthContext';
-import createAppRouter from './lib/react-router/routerSetup';
-import '@mantine/core/styles.css';
-import './App.css';
+import { RouterProvider } from 'react-router-dom'
+import { AuthProvider } from './routes/auth/AuthContext'
+import createAppRouter from './lib/react-router/routerSetup'
+import '@mantine/core/styles.css'
+import ThemeProvider from './lib/mantine/theme'
 
-const router = createAppRouter();
+const router = createAppRouter()
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <MantineProvider>
+    <ThemeProvider>
       <AuthProvider>
         <RouterProvider router={router} />
       </AuthProvider>
-    </MantineProvider>
+    </ThemeProvider>
   </StrictMode>,
 )
