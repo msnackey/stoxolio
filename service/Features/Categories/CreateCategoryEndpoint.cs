@@ -1,38 +1,44 @@
+using Stoxolio.Service.BuildingBlocks.Common;
 using Stoxolio.Service.BuildingBlocks.CQRS;
 using Stoxolio.Service.Data;
 using Stoxolio.Service.DTOs;
+using Stoxolio.Service.Mappings;
 using Stoxolio.Service.Models;
 
 namespace Stoxolio.Service.Features.Categories;
 
 public sealed record CreateCategoryCommand(CreateCategoryRequest Request) : ICommand<CreateCategoryResponse>;
 
-public sealed record CreateCategoryRequest
-{
-    public required CategoryDto CategoryDto { get; init; }
-}
+public sealed record CreateCategoryRequest(CategoryDto Category);
 
-public sealed record CreateCategoryResponse
-{
-    public required Category Category { get; init; }
-};
+public sealed record CreateCategoryResponse(CategoryDto Category);
 
-public class CreateCategoryHandler(StoxolioDbContext context) : ICommandHandler<CreateCategoryCommand, CreateCategoryResponse>
+public class CreateCategoryHandler(StoxolioDbContext context)
+    : ICommandHandler<CreateCategoryCommand, CreateCategoryResponse>
 {
-    public async Task<CreateCategoryResponse> Handle(CreateCategoryCommand command, CancellationToken cancellationToken)
+    public async Task<Result<CreateCategoryResponse>> Handle(CreateCategoryCommand command,
+        CancellationToken cancellationToken)
     {
-        var category = new Category
+        try
         {
-            Name = command.Request.CategoryDto.Name,
-            Target = command.Request.CategoryDto.Target
-        };
+            var category = new Category
+            {
+                Name = command.Request.Category.Name,
+                Target = command.Request.Category.Target
+            };
 
-        context.Categories.Add(category);
-        await context.SaveChangesAsync(cancellationToken);
+            context.Categories.Add(category);
+            await context.SaveChangesAsync(cancellationToken);
 
-        return new CreateCategoryResponse
+            return Result.Success(new CreateCategoryResponse(category.ToDto()));
+        }
+        catch
         {
-            Category = category
-        };
+            return Result.Failure<CreateCategoryResponse>(
+                new Error(
+                    "CreateCategory.Failed",
+                    "Failed trying to create category.",
+                    ErrorType.Problem));
+        }
     }
 }

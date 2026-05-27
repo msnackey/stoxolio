@@ -1,3 +1,4 @@
+using Stoxolio.Service.BuildingBlocks.Common;
 using Stoxolio.Service.BuildingBlocks.CQRS;
 using Stoxolio.Service.Features.Categories;
 
@@ -17,12 +18,9 @@ public static class CategoriesEndpoints
             {
                 var result = await handler.Handle(new GetCategoriesQuery(), cancellationToken);
 
-                return Results.Ok(result);
-
-                // TODO: Implement Results class
-                // return result.IsSuccess
-                //     ? Results.Ok(result.Value)
-                //     : ApiResults.Problem(result);
+                return result.IsSuccess
+                    ? Results.Ok(result.Value)
+                    : ApiResults.Problem(result);
             })
             .WithName("GetCategories")
             .WithDescription("Get all categories.")
@@ -38,12 +36,9 @@ public static class CategoriesEndpoints
             {
                 var result = await handler.Handle(new CreateCategoryCommand(request), cancellationToken);
 
-                return Results.Ok(result);
-
-                // TODO: Implement Results class
-                // return result.IsSuccess
-                //     ? Results.Ok(result.Value)
-                //     : ApiResults.Problem(result);
+                return result.IsSuccess
+                    ? Results.Ok(result.Value)
+                    : ApiResults.Problem(result);
             })
             .WithName("CreateCategory")
             .WithDescription("Create a new category.")
@@ -59,12 +54,9 @@ public static class CategoriesEndpoints
             {
                 var result = await handler.Handle(new DeleteCategoryCommand(request), cancellationToken);
 
-                return Results.Ok(result);
-
-                // TODO: Implement Results class
-                // return result.IsSuccess
-                //     ? Results.Ok(result.Value)
-                //     : ApiResults.Problem(result);
+                return result.IsSuccess
+                    ? Results.Ok(result.Value)
+                    : ApiResults.Problem(result);
             })
             .WithName("DeleteCategory")
             .WithDescription("Delete a category.")
@@ -80,12 +72,9 @@ public static class CategoriesEndpoints
             {
                 var result = await handler.Handle(new UpdateCategoryCommand(request), cancellationToken);
 
-                return Results.Ok(result);
-
-                // TODO: Implement Results class
-                // return result.IsSuccess
-                //     ? Results.Ok(result.Value)
-                //     : ApiResults.Problem(result);
+                return result.IsSuccess
+                    ? Results.Ok(result.Value)
+                    : ApiResults.Problem(result);
             })
             .WithName("UpdateCategory")
             .WithDescription("Update a category.")

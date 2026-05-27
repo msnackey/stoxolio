@@ -1,42 +1,50 @@
+using Stoxolio.Service.BuildingBlocks.Common;
 using Stoxolio.Service.BuildingBlocks.CQRS;
 using Stoxolio.Service.Data;
 using Stoxolio.Service.DTOs;
+using Stoxolio.Service.Mappings;
 using Stoxolio.Service.Models;
 
 namespace Stoxolio.Service.Features.Stocks;
 
 public sealed record CreateStockCommand(CreateStockRequest Request) : ICommand<CreateStockResponse>;
 
-public sealed record CreateStockRequest
-{
-    public required StockDto StockDto { get; init; }
-}
+public sealed record CreateStockRequest(StockDto Stock);
 
-public sealed record CreateStockResponse
-{
-    public required Stock Stock { get; init; }
-};
+public sealed record CreateStockResponse(StockDto Stock);
 
 public class CreateStockHandler(StoxolioDbContext context) : ICommandHandler<CreateStockCommand, CreateStockResponse>
 {
-    public async Task<CreateStockResponse> Handle(CreateStockCommand command, CancellationToken cancellationToken)
+    public async Task<Result<CreateStockResponse>> Handle(CreateStockCommand command,
+        CancellationToken cancellationToken)
     {
-        var stock = new Stock
+        try
         {
-            Name = command.Request.StockDto.Name,
-            Ticker = command.Request.StockDto.Ticker,
-            Exchange = command.Request.StockDto.Exchange,
-            Sri = command.Request.StockDto.Sri,
-            Shares = command.Request.StockDto.Shares,
-            Price = command.Request.StockDto.Price,
-            Invest = command.Request.StockDto.Invest,
-            CategoryId = command.Request.StockDto.CategoryId,
-            PrevPrice = command.Request.StockDto.PrevPrice // TODO: Remove from DTO and make calculated field in database
-        };
+            var stock = new Stock
+            {
+                Name = command.Request.Stock.Name,
+                Ticker = command.Request.Stock.Ticker,
+                Exchange = command.Request.Stock.Exchange,
+                Sri = command.Request.Stock.Sri,
+                Shares = command.Request.Stock.Shares,
+                Price = command.Request.Stock.Price,
+                Invest = command.Request.Stock.Invest,
+                CategoryId = command.Request.Stock.CategoryId,
+                PrevPrice = command.Request.Stock.Price
+            };
 
-        context.Stocks.Add(stock);
-        await context.SaveChangesAsync(cancellationToken);
+            context.Stocks.Add(stock);
+            await context.SaveChangesAsync(cancellationToken);
 
-        return new CreateStockResponse { Stock = stock };
+            return Result.Success(new CreateStockResponse(stock.ToDto()));
+        }
+        catch
+        {
+            return Result.Failure<CreateStockResponse>(
+                new Error(
+                    "CreateStock.Failed",
+                    "Failed to create stock.",
+                    ErrorType.Problem));
+        }
     }
 }
