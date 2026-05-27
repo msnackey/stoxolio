@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using Stoxolio.Service.Data;
 using Stoxolio.Service.Extensions;
 
@@ -30,6 +31,17 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<StoxolioDbContext>();
     db.Database.EnsureCreated();
+    // EnsureCreated won't add new tables to an existing DB — do it manually
+    db.Database.ExecuteSqlRaw(@"
+        CREATE TABLE IF NOT EXISTS RefreshTokens (
+            Id INTEGER PRIMARY KEY AUTOINCREMENT,
+            UserId INTEGER NOT NULL REFERENCES Users(Id) ON DELETE CASCADE,
+            Token TEXT NOT NULL UNIQUE,
+            Expires TEXT NOT NULL,
+            IsRevoked INTEGER NOT NULL DEFAULT 0,
+            CreatedAt TEXT NOT NULL
+        )
+    ");
 
     // Seed test data if development
     if (app.Environment.IsDevelopment())

@@ -6,17 +6,34 @@ namespace Stoxolio.Service.Endpoints;
 
 public static class AuthEndpoints
 {
-    private const string CookieName = "auth_token";
-    private const int CookieExpiryHours = 24;
+    private const string AccessTokenCookie = "auth_token";
+    private const string RefreshTokenCookie = "refresh_token";
+    private const int AccessTokenExpiryMinutes = 15;
+    private const int RefreshTokenExpiryDays = 7;
 
-    private static CookieOptions CreateAuthCookieOptions() => new()
+    private static CookieOptions CreateAccessTokenCookieOptions() => new()
     {
         HttpOnly = true,
-        Secure = false, // set to true in production via env config
+        Secure = false, // set true in production
         SameSite = SameSiteMode.Lax,
-        Expires = DateTimeOffset.UtcNow.AddHours(CookieExpiryHours),
+        Expires = DateTimeOffset.UtcNow.AddMinutes(AccessTokenExpiryMinutes),
         Path = "/"
     };
+
+    private static CookieOptions CreateRefreshTokenCookieOptions() => new()
+    {
+        HttpOnly = true,
+        Secure = false, // set true in production
+        SameSite = SameSiteMode.Lax,
+        Expires = DateTimeOffset.UtcNow.AddDays(RefreshTokenExpiryDays),
+        Path = "/api/auth" // only sent to auth endpoints
+    };
+
+    private static void SetAuthCookies(HttpContext httpContext, string accessToken, string refreshToken)
+    {
+        httpContext.Response.Cookies.Append(AccessTokenCookie, accessToken, CreateAccessTokenCookieOptions());
+        httpContext.Response.Cookies.Append(RefreshTokenCookie, refreshToken, CreateRefreshTokenCookieOptions());
+    }
 
     public static void MapAuthEndpoints(this IEndpointRouteBuilder app)
     {
@@ -29,10 +46,11 @@ public static class AuthEndpoints
                 HttpContext httpContext,
                 CancellationToken cancellationToken) =>
             {
-                var (success, message, token) = await authService.LoginAsync(request.Username, request.Password);
+                var (success, message, accessToken, refreshToken) =
+                    await authService.LoginAsync(request.Username, request.Password);
                 if (!success)
                     return Results.Unauthorized();
-                httpContext.Response.Cookies.Append(CookieName, token!, CreateAuthCookieOptions());
+                SetAuthCookies(httpContext, accessToken!, refreshToken!);
                 return Results.Ok(new AuthResponse { Success = true, Message = message, Username = request.Username });
             })
             .WithName("Login")
@@ -50,11 +68,11 @@ public static class AuthEndpoints
                 HttpContext httpContext,
                 CancellationToken cancellationToken) =>
             {
-                var (success, message, token) =
+                var (success, message, accessToken, refreshToken) =
                     await authService.RegisterAsync(request.Username, request.Email, request.Password);
                 if (!success)
                     return Results.Conflict(new AuthResponse { Success = false, Message = message });
-                httpContext.Response.Cookies.Append(CookieName, token!, CreateAuthCookieOptions());
+                SetAuthCookies(httpContext, accessToken!, refreshToken!);
                 return Results.Ok(new AuthResponse { Success = true, Message = message, Username = request.Username });
             })
             .WithName("Register")
@@ -64,13 +82,40 @@ public static class AuthEndpoints
             .ProducesProblem(500)
             .ProducesProblem(502);
 
-        group.MapPost("/logout", (HttpContext httpContext) =>
+        group.MapPost("/refresh", async (
+                IAuthService authService,
+                HttpContext httpContext) =>
             {
-                httpContext.Response.Cookies.Delete(CookieName, CreateAuthCookieOptions());
+                var refreshToken = httpContext.Request.Cookies[RefreshTokenCookie];
+                if (string.IsNullOrEmpty(refreshToken))
+                    return Results.Unauthorized();
+
+                var (success, accessToken, newRefreshToken) = await authService.RefreshAsync(refreshToken);
+                if (!success)
+                    return Results.Unauthorized();
+
+                SetAuthCookies(httpContext, accessToken!, newRefreshToken!);
+                return Results.Ok();
+            })
+            .WithName("Refresh")
+            .WithDescription("Refreshes the access token using a valid refresh token cookie.")
+            .Produces(200)
+            .ProducesProblem(401);
+
+        group.MapPost("/logout", async (
+                IAuthService authService,
+                HttpContext httpContext) =>
+            {
+                var refreshToken = httpContext.Request.Cookies[RefreshTokenCookie];
+                if (!string.IsNullOrEmpty(refreshToken))
+                    await authService.RevokeRefreshTokenAsync(refreshToken);
+
+                httpContext.Response.Cookies.Delete(AccessTokenCookie, CreateAccessTokenCookieOptions());
+                httpContext.Response.Cookies.Delete(RefreshTokenCookie, CreateRefreshTokenCookieOptions());
                 return Results.Ok();
             })
             .WithName("Logout")
-            .WithDescription("Clears the auth cookie.")
+            .WithDescription("Revokes the refresh token and clears auth cookies.")
             .Produces(200);
     }
 }

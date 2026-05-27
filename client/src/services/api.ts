@@ -6,6 +6,8 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 class ApiClient {
     private client: AxiosInstance;
     private onUnauthorized?: () => void;
+    private isRefreshing = false;
+    private refreshQueue: Array<(success: boolean) => void> = [];
 
     constructor() {
         this.client = axios.create({
@@ -18,13 +20,47 @@ class ApiClient {
 
         this.client.interceptors.response.use(
             (response) => response,
-            (error) => {
-                if (error.response?.status === 401 && this.onUnauthorized) {
-                    this.onUnauthorized();
+            async (error) => {
+                const originalRequest = error.config;
+                const isAuthEndpoint = originalRequest?.url?.includes('/auth/');
+
+                if (error.response?.status === 401 && !originalRequest?._isRetry && !isAuthEndpoint) {
+                    originalRequest._isRetry = true;
+
+                    if (this.isRefreshing) {
+                        return new Promise((resolve, reject) => {
+                            this.refreshQueue.push((success) => {
+                                success ? resolve(this.client(originalRequest)) : reject(error);
+                            });
+                        });
+                    }
+
+                    this.isRefreshing = true;
+                    try {
+                        await this.client.post('/auth/refresh');
+                        this.drainQueue(true);
+                        return this.client(originalRequest);
+                    } catch {
+                        this.drainQueue(false);
+                        this.onUnauthorized?.();
+                        return Promise.reject(error);
+                    } finally {
+                        this.isRefreshing = false;
+                    }
                 }
+
+                if (error.response?.status === 401 && originalRequest?._isRetry) {
+                    this.onUnauthorized?.();
+                }
+
                 return Promise.reject(error);
             }
         );
+    }
+
+    private drainQueue(success: boolean) {
+        this.refreshQueue.forEach((cb) => cb(success));
+        this.refreshQueue = [];
     }
 
     setUnauthorizedHandler(handler: () => void) {
