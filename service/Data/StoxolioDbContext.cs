@@ -3,13 +3,10 @@ using Stoxolio.Service.Models;
 
 namespace Stoxolio.Service.Data;
 
-public class StoxolioDbContext : DbContext
+public class StoxolioDbContext(DbContextOptions<StoxolioDbContext> options) : DbContext(options)
 {
-    public StoxolioDbContext(DbContextOptions<StoxolioDbContext> options) : base(options)
-    {
-    }
-
     public DbSet<User> Users { get; set; }
+    public DbSet<RefreshToken> RefreshTokens { get; set; }
     public DbSet<Category> Categories { get; set; }
     public DbSet<Stock> Stocks { get; set; }
     public DbSet<Transaction> Transactions { get; set; }
@@ -78,5 +75,19 @@ public class StoxolioDbContext : DbContext
         modelBuilder.Entity<Transaction>()
             .Property(t => t.Total)
             .HasPrecision(18, 3);
+
+        // RefreshToken configuration
+        modelBuilder.Entity<RefreshToken>()
+            .HasKey(r => r.Id);
+
+        modelBuilder.Entity<RefreshToken>()
+            .HasIndex(r => r.Token)
+            .IsUnique();
+
+        modelBuilder.Entity<RefreshToken>()
+            .HasOne(r => r.User)
+            .WithMany()
+            .HasForeignKey(r => r.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

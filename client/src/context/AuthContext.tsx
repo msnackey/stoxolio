@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, useCallback } from 'react';
+import React, { createContext, useState, useContext, useCallback, useEffect } from 'react';
 import api from '../services/api';
 
 interface AuthContextType {
@@ -12,20 +12,26 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-    const [isAuthenticated, setIsAuthenticated] = useState(() => {
-        return localStorage.getItem('auth_token') !== null;
-    });
     const [username, setUsername] = useState<string | null>(() => {
         return localStorage.getItem('username');
     });
 
+    const isAuthenticated = username !== null;
+
+    const clearSession = useCallback(() => {
+        localStorage.removeItem('username');
+        setUsername(null);
+    }, []);
+
+    useEffect(() => {
+        api.setUnauthorizedHandler(clearSession);
+    }, [clearSession]);
+
     const login = useCallback(async (username: string, password: string) => {
         try {
             const response = await api.login(username, password);
-            if (response.success && response.token) {
-                localStorage.setItem('auth_token', response.token);
+            if (response.success) {
                 localStorage.setItem('username', username);
-                setIsAuthenticated(true);
                 setUsername(username);
                 return true;
             }
@@ -38,11 +44,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const register = useCallback(async (username: string, email: string, password: string) => {
         try {
             const response = await api.register(username, email, password);
-            if (response.success && response.token) {
-                localStorage.setItem('auth_token', response.token);
-                localStorage.setItem('username', username);
-                setIsAuthenticated(true);
-                setUsername(username);
+            if (response.success && response.username) {
+                localStorage.setItem('username', response.username);
+                setUsername(response.username);
                 return true;
             }
             return false;
@@ -51,12 +55,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
     }, []);
 
-    const logout = useCallback(() => {
-        localStorage.removeItem('auth_token');
-        localStorage.removeItem('username');
-        setIsAuthenticated(false);
-        setUsername(null);
-    }, []);
+    const logout = useCallback(async () => {
+        try {
+            await api.logout();
+        } finally {
+            clearSession();
+        }
+    }, [clearSession]);
 
     return (
         <AuthContext.Provider value={{ isAuthenticated, username, login, register, logout }}>

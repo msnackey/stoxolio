@@ -1,27 +1,70 @@
 import axios, { type AxiosInstance } from 'axios';
 import type { Category, Stock, AuthResponse } from '../types';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 
 class ApiClient {
     private client: AxiosInstance;
+    private onUnauthorized?: () => void;
+    private isRefreshing = false;
+    private refreshQueue: Array<(success: boolean) => void> = [];
 
     constructor() {
         this.client = axios.create({
             baseURL: API_BASE_URL,
+            withCredentials: true,
             headers: {
                 'Content-Type': 'application/json',
             },
         });
 
-        // Add JWT token to headers if available
-        this.client.interceptors.request.use((config) => {
-            const token = localStorage.getItem('auth_token');
-            if (token) {
-                config.headers.Authorization = `Bearer ${token}`;
+        this.client.interceptors.response.use(
+            (response) => response,
+            async (error) => {
+                const originalRequest = error.config;
+                const isAuthEndpoint = originalRequest?.url?.includes('/auth/');
+
+                if (error.response?.status === 401 && !originalRequest?._isRetry && !isAuthEndpoint) {
+                    originalRequest._isRetry = true;
+
+                    if (this.isRefreshing) {
+                        return new Promise((resolve, reject) => {
+                            this.refreshQueue.push((success) => {
+                                success ? resolve(this.client(originalRequest)) : reject(error);
+                            });
+                        });
+                    }
+
+                    this.isRefreshing = true;
+                    try {
+                        await this.client.post('/auth/refresh');
+                        this.drainQueue(true);
+                        return this.client(originalRequest);
+                    } catch {
+                        this.drainQueue(false);
+                        this.onUnauthorized?.();
+                        return Promise.reject(error);
+                    } finally {
+                        this.isRefreshing = false;
+                    }
+                }
+
+                if (error.response?.status === 401 && originalRequest?._isRetry) {
+                    this.onUnauthorized?.();
+                }
+
+                return Promise.reject(error);
             }
-            return config;
-        });
+        );
+    }
+
+    private drainQueue(success: boolean) {
+        this.refreshQueue.forEach((cb) => cb(success));
+        this.refreshQueue = [];
+    }
+
+    setUnauthorizedHandler(handler: () => void) {
+        this.onUnauthorized = handler;
     }
 
     // Auth endpoints
@@ -40,6 +83,10 @@ class ApiClient {
             password,
         });
         return response.data;
+    }
+
+    async logout(): Promise<void> {
+        await this.client.post('/auth/logout');
     }
 
     // Category endpoints
