@@ -1,5 +1,8 @@
 import React, { createContext, useState, useContext, useCallback, useEffect } from 'react';
-import api from '../services/api';
+import { setUnauthorizedHandler } from '../../lib/axios/apiClient';
+import loginApi from './api/login';
+import logoutApi from './api/logout';
+import registerApi from './api/register';
 
 interface AuthContextType {
     isAuthenticated: boolean;
@@ -24,12 +27,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }, []);
 
     useEffect(() => {
-        api.setUnauthorizedHandler(clearSession);
+        setUnauthorizedHandler(clearSession);
     }, [clearSession]);
 
     const login = useCallback(async (username: string, password: string) => {
         try {
-            const response = await api.login(username, password);
+            const response = await loginApi(username, password);
             if (response.success) {
                 localStorage.setItem('username', username);
                 setUsername(username);
@@ -43,7 +46,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const register = useCallback(async (username: string, email: string, password: string) => {
         try {
-            const response = await api.register(username, email, password);
+            const response = await registerApi(username, email, password);
             if (response.success && response.username) {
                 localStorage.setItem('username', response.username);
                 setUsername(response.username);
@@ -57,7 +60,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const logout = useCallback(async () => {
         try {
-            await api.logout();
+            await logoutApi();
         } finally {
             clearSession();
         }

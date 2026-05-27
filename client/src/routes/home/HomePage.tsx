@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
-import { useAuth } from '../context/AuthContext';
-import api from '../services/api';
-import type { Category } from '../types';
+import { useAuth } from '../auth/AuthContext';
+import type Category from "../../types/Category";
+import fetchCategories from '../shell/api/fetchCategories';
 
-export function DashboardPage() {
+export default function HomePage() {
     const { username, logout } = useAuth();
     const [categories, setCategories] = useState<Category[]>([]);
     const [loading, setLoading] = useState(true);
@@ -12,8 +12,8 @@ export function DashboardPage() {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const data = await api.getCategories();
-                setCategories(data);
+                const data = await fetchCategories();
+                setCategories(data.categories);
             } catch (err) {
                 setError('Failed to load categories');
             } finally {

@@ -1,3 +1,4 @@
+using Stoxolio.Service.BuildingBlocks.Common;
 using Stoxolio.Service.BuildingBlocks.CQRS;
 using Stoxolio.Service.Features.Stocks;
 
@@ -17,12 +18,9 @@ public static class StocksEndpoints
             {
                 var result = await handler.Handle(new GetStocksQuery(), cancellationToken);
 
-                return Results.Ok(result);
-
-                // TODO: Implement Results class
-                // return result.IsSuccess
-                //     ? Results.Ok(result.Value)
-                //     : ApiResults.Problem(result);
+                return result.IsSuccess
+                    ? Results.Ok(result.Value)
+                    : ApiResults.Problem(result);
             })
             .WithName("GetStocks")
             .WithDescription("Get all stocks.")
@@ -38,12 +36,9 @@ public static class StocksEndpoints
             {
                 var result = await handler.Handle(new CreateStockCommand(request), cancellationToken);
 
-                return Results.Ok(result);
-
-                // TODO: Implement Results class
-                // return result.IsSuccess
-                //     ? Results.Ok(result.Value)
-                //     : ApiResults.Problem(result);
+                return result.IsSuccess
+                    ? Results.Ok(result.Value)
+                    : ApiResults.Problem(result);
             })
             .WithName("CreateStock")
             .WithDescription("Create a new stock.")
@@ -59,12 +54,9 @@ public static class StocksEndpoints
             {
                 var result = await handler.Handle(new DeleteStockCommand(request), cancellationToken);
 
-                return Results.Ok(result);
-
-                // TODO: Implement Results class
-                // return result.IsSuccess
-                //     ? Results.Ok(result.Value)
-                //     : ApiResults.Problem(result);
+                return result.IsSuccess
+                    ? Results.Ok(result.Value)
+                    : ApiResults.Problem(result);
             })
             .WithName("DeleteStock")
             .WithDescription("Delete a stock.")
@@ -80,12 +72,9 @@ public static class StocksEndpoints
             {
                 var result = await handler.Handle(new UpdateStockCommand(request), cancellationToken);
 
-                return Results.Ok(result);
-
-                // TODO: Implement Results class
-                // return result.IsSuccess
-                //     ? Results.Ok(result.Value)
-                //     : ApiResults.Problem(result);
+                return result.IsSuccess
+                    ? Results.Ok(result.Value)
+                    : ApiResults.Problem(result);
             })
             .WithName("UpdateStock")
             .WithDescription("Update a stock.")
