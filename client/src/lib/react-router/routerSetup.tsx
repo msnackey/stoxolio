@@ -1,4 +1,4 @@
-import { createBrowserRouter, Navigate, type RouteObject } from 'react-router-dom'
+import { createBrowserRouter, Navigate, type RouteObject } from 'react-router'
 import type RouteHandle from './router.types'
 import RootLayout from '../../routes/shell/components/RootLayout'
 import categoriesAndStocksLoader from '../../routes/shell/loaders/categoriesAndStocksLoader'
@@ -15,42 +15,39 @@ type AppRouteObject = RouteObject & {
 }
 
 export default function createAppRouter() {
-  return createBrowserRouter(
-    [
-      {
-        element: <RootLayout />,
-        children: [
-          {
-            path: '/login',
-            element: <LoginPage />,
-          },
-          {
-            path: '/register',
-            element: <RegisterPage />,
-          },
-          {
-            element: <AppShell />,
-            middleware: [authMiddleware],
-            loader: categoriesAndStocksLoader,
-            id: 'shell',
-            path: '/',
-            shouldRevalidate: () => false,
-            hydrateFallbackElement: <AppShellLoader />,
-            errorElement: <GlobalErrorPage title="Stoxolio" offSet={32} />,
-            children: [
-              {
-                index: true,
-                element: <HomePage />,
-              },
-            ],
-          },
-          {
-            path: '*',
-            element: <Navigate to="/" replace />,
-          },
-        ],
-      },
-    ] satisfies AppRouteObject[],
-    { future: { v8_middleware: true } },
-  )
+  return createBrowserRouter([
+    {
+      path: '/',
+      element: <RootLayout />,
+      children: [
+        {
+          path: '/login',
+          element: <LoginPage />,
+        },
+        {
+          path: '/register',
+          element: <RegisterPage />,
+        },
+        {
+          id: 'shell',
+          middleware: [authMiddleware],
+          loader: categoriesAndStocksLoader,
+          shouldRevalidate: () => false,
+          element: <AppShell />,
+          hydrateFallbackElement: <AppShellLoader />,
+          errorElement: <GlobalErrorPage title="Stoxolio" offSet={32} />,
+          children: [
+            {
+              index: true,
+              element: <HomePage />,
+            },
+          ],
+        },
+        {
+          path: '*',
+          element: <Navigate to="/" replace />,
+        },
+      ],
+    },
+  ] satisfies AppRouteObject[])
 }

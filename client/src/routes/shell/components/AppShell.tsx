@@ -1,5 +1,5 @@
 import { Group, AppShell as Shell, Stack } from '@mantine/core'
-import { Outlet } from 'react-router-dom'
+import { Outlet } from 'react-router'
 import { useRouteHandles } from '../../../lib/react-router/useRouteHandles'
 
 const headerFullHeight = 128

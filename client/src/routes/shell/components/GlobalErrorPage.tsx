@@ -1,5 +1,5 @@
 import { Group, AppShell as Shell, Stack, Text, Title } from '@mantine/core'
-import { isRouteErrorResponse, useRouteError, useSearchParams } from 'react-router-dom'
+import { isRouteErrorResponse, useRouteError, useSearchParams } from 'react-router'
 import { ValidationError } from '../../../types/validationError'
 
 const borderRadius = 16

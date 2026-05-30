@@ -1,4 +1,4 @@
-import { useMatches } from 'react-router-dom'
+import { useMatches } from 'react-router'
 import type RouteHandle from './router.types'
 
 export function useRouteHandles(): RouteHandle[] {
