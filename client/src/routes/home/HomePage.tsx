@@ -1,9 +1,16 @@
+import { useNavigate } from 'react-router'
 import { useAuth } from '../auth/authContext'
 import useCategoriesAndStocksData from '../shell/hooks/useCategoriesAndStocksData'
 
 export default function HomePage() {
+  const navigate = useNavigate()
   const { username, logout } = useAuth()
   const { categories } = useCategoriesAndStocksData()
+
+  const handleLogout = () => {
+    logout()
+    navigate('/login')
+  }
 
   return (
     <div style={{ padding: '20px' }}>
@@ -11,7 +18,7 @@ export default function HomePage() {
         <h1>Portfolio Dashboard</h1>
         <div>
           <span style={{ marginRight: '15px' }}>Welcome, {username}!</span>
-          <button onClick={logout}>Logout</button>
+          <button onClick={handleLogout}>Logout</button>
         </div>
       </div>
 

@@ -21,25 +21,25 @@ export default function createAppRouter() {
       element: <RootLayout />,
       children: [
         {
-          path: '/login',
-          element: <LoginPage />,
-        },
-        {
-          path: '/register',
-          element: <RegisterPage />,
-        },
-        {
-          id: 'shell',
-          middleware: [authMiddleware],
-          loader: categoriesAndStocksLoader,
-          shouldRevalidate: () => false,
           element: <AppShell />,
           hydrateFallbackElement: <AppShellLoader />,
           errorElement: <GlobalErrorPage title="Stoxolio" offSet={32} />,
           children: [
             {
+              id: 'home',
               index: true,
+              middleware: [authMiddleware],
+              loader: categoriesAndStocksLoader,
+              shouldRevalidate: () => false,
               element: <HomePage />,
+            },
+            {
+              path: '/login',
+              element: <LoginPage />,
+            },
+            {
+              path: '/register',
+              element: <RegisterPage />,
             },
           ],
         },
