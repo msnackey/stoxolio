@@ -40,3 +40,6 @@ npm-debug.log*
 
 # Environment
 .env
+
+# Github Copilot
+.github/copilot-instructions.md

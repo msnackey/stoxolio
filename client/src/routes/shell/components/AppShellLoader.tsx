@@ -11,7 +11,7 @@ export default function AppShellLoader() {
       <Shell.Header withBorder={false}>
         <Stack gap={0}>
           {/* Top header */}
-          <Group h={topHeaderHeight} bg="orange">
+          <Group h={topHeaderHeight} bg="green">
             <Group
               bg="primary"
               w="74%"

@@ -7,50 +7,50 @@ import AppShellLoader from '../../routes/shell/components/AppShellLoader'
 import AppShell from '../../routes/shell/components/AppShell'
 import LoginPage from '../../routes/auth/LoginPage'
 import RegisterPage from '../../routes/auth/RegisterPage'
-import ProtectedRoute from '../../routes/auth/components/ProtectedRoute'
 import HomePage from '../../routes/home/HomePage'
+import authMiddleware from '../../routes/auth/authMiddleware'
 
 type AppRouteObject = RouteObject & {
   handle?: RouteHandle
 }
 
 export default function createAppRouter() {
-  return createBrowserRouter([
-    {
-      element: <RootLayout />,
-      children: [
-        {
-          path: '/login',
-          element: <LoginPage />,
-        },
-        {
-          path: '/register',
-          element: <RegisterPage />,
-        },
-        {
-          element: <AppShell />,
-          loader: categoriesAndStocksLoader,
-          id: 'root',
-          path: '/',
-          shouldRevalidate: () => false,
-          hydrateFallbackElement: <AppShellLoader />,
-          errorElement: <GlobalErrorPage title="Stoxolio" offSet={32} />,
-          children: [
-            {
-              index: true,
-              element: (
-                <ProtectedRoute>
-                  <HomePage />
-                </ProtectedRoute>
-              ),
-            },
-          ],
-        },
-        {
-          path: '*',
-          element: <Navigate to="/" replace />,
-        },
-      ],
-    },
-  ] satisfies AppRouteObject[])
+  return createBrowserRouter(
+    [
+      {
+        element: <RootLayout />,
+        children: [
+          {
+            path: '/login',
+            element: <LoginPage />,
+          },
+          {
+            path: '/register',
+            element: <RegisterPage />,
+          },
+          {
+            element: <AppShell />,
+            middleware: [authMiddleware],
+            loader: categoriesAndStocksLoader,
+            id: 'shell',
+            path: '/',
+            shouldRevalidate: () => false,
+            hydrateFallbackElement: <AppShellLoader />,
+            errorElement: <GlobalErrorPage title="Stoxolio" offSet={32} />,
+            children: [
+              {
+                index: true,
+                element: <HomePage />,
+              },
+            ],
+          },
+          {
+            path: '*',
+            element: <Navigate to="/" replace />,
+          },
+        ],
+      },
+    ] satisfies AppRouteObject[],
+    { future: { v8_middleware: true } },
+  )
 }

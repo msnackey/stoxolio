@@ -11,9 +11,10 @@ export default async function categoriesAndStocksLoader() {
     }
   } catch (_error) {
     const error = _error as AxiosError
-    throw new Response('Failed to load categories and stocks', {
+    throw new Response(JSON.stringify({ message: 'Failed to load categories and stocks' }), {
       status: error.status ?? 500,
       statusText: error.message,
+      headers: { 'Content-Type': 'application/json' },
     })
   }
 }
