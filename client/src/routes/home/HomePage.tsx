@@ -1,27 +1,11 @@
-import { useNavigate } from 'react-router'
-import { useAuth } from '../auth/authContext'
+import { Container } from '@mantine/core'
 import useCategoriesAndStocksData from '../shell/hooks/useCategoriesAndStocksData'
 
 export default function HomePage() {
-  const navigate = useNavigate()
-  const { username, logout } = useAuth()
   const { categories } = useCategoriesAndStocksData()
 
-  const handleLogout = () => {
-    logout()
-    navigate('/login')
-  }
-
   return (
-    <div style={{ padding: '20px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h1>Portfolio Dashboard</h1>
-        <div>
-          <span style={{ marginRight: '15px' }}>Welcome, {username}!</span>
-          <button onClick={handleLogout}>Logout</button>
-        </div>
-      </div>
-
+    <Container>
       <div>
         <h2>Categories</h2>
         {categories.length === 0 ? (
@@ -62,6 +46,6 @@ export default function HomePage() {
           </div>
         )}
       </div>
-    </div>
+    </Container>
   )
 }

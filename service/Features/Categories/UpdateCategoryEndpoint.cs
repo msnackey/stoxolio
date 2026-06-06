@@ -8,7 +8,7 @@ namespace Stoxolio.Service.Features.Categories;
 
 public sealed record UpdateCategoryCommand(UpdateCategoryRequest Request) : ICommand<UpdateCategoryResponse>;
 
-public sealed record UpdateCategoryRequest(int Id, string? Name = null, double? Target = null);
+public sealed record UpdateCategoryRequest(CategoryDto Category);
 
 public sealed record UpdateCategoryResponse(CategoryDto Category);
 
@@ -21,7 +21,7 @@ public class UpdateCategoryHandler(StoxolioDbContext context)
         try
         {
             var category =
-                await context.Categories.FindAsync([command.Request.Id], cancellationToken);
+                await context.Categories.FindAsync([command.Request.Category.Id], cancellationToken);
 
             if (category == null)
                 return Result.Failure<UpdateCategoryResponse>(
@@ -30,8 +30,8 @@ public class UpdateCategoryHandler(StoxolioDbContext context)
                         "Category not found.",
                         ErrorType.NotFound));
 
-            category.Name = command.Request.Name ?? category.Name;
-            category.Target = command.Request.Target ?? category.Target;
+            category.Name = command.Request.Category.Name;
+            category.Target = command.Request.Category.Target;
 
             context.Categories.Update(category);
             await context.SaveChangesAsync(cancellationToken);

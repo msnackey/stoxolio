@@ -9,7 +9,7 @@ namespace Stoxolio.Service.Features.Categories;
 
 public sealed record CreateCategoryCommand(CreateCategoryRequest Request) : ICommand<CreateCategoryResponse>;
 
-public sealed record CreateCategoryRequest(CategoryDto Category);
+public sealed record CreateCategoryRequest(string Name, double Target);
 
 public sealed record CreateCategoryResponse(CategoryDto Category);
 
@@ -23,8 +23,8 @@ public class CreateCategoryHandler(StoxolioDbContext context)
         {
             var category = new Category
             {
-                Name = command.Request.Category.Name,
-                Target = command.Request.Category.Target
+                Name = command.Request.Name,
+                Target = command.Request.Target
             };
 
             context.Categories.Add(category);

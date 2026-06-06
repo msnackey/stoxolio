@@ -2,7 +2,8 @@ import apiClient from '../../../lib/axios/apiClient'
 import type Category from '../../../types/category'
 
 export interface CreateCategoryRequest {
-  category: Category
+  name: string
+  target: number
 }
 
 export interface CreateCategoryResponse {

@@ -1,10 +1,10 @@
 import { createTheme, MantineProvider } from '@mantine/core'
 import type { PropsWithChildren } from 'react'
-import "./customStyles.css"
+import './customStyles.css'
 
 const theme = createTheme({
   fontFamily: 'Open Sans, sans-serif',
-  primaryColor: 'green',
+  // primaryColor: 'green',
 })
 
 export default function ThemeProvider({ children }: PropsWithChildren) {
