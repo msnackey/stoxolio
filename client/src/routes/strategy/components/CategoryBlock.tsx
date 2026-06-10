@@ -44,7 +44,7 @@ export const CategoryBlock = ({ category, onEdit, onDelete }: Props) => {
         <Text size="md" fw={700}>
           <NumberFormatter
             prefix="€"
-            value={10000}
+            value={category.value}
             decimalScale={0}
             decimalSeparator=","
             thousandSeparator="."
@@ -65,7 +65,7 @@ export const CategoryBlock = ({ category, onEdit, onDelete }: Props) => {
           Target: <NumberFormatter value={category.target * 100} decimalScale={0} suffix="%" />
         </Text>
         <Text size="sm">
-          Actual: <NumberFormatter value={category.target * 100} decimalScale={0} suffix="%" />
+          Actual: <NumberFormatter value={category.actual * 100} decimalScale={0} suffix="%" />
         </Text>
       </Group>
 

@@ -22,7 +22,7 @@ public class GetCategoriesHandler(StoxolioDbContext context) : IQueryHandler<Get
                 .Include(c => c.Stocks)
                 .ToListAsync(cancellationToken);
 
-            return Result.Success(new GetCategoriesResponse(categories.Select(c => c.ToDto()).ToList()));
+            return Result.Success(new GetCategoriesResponse(categories.Select(c => c.ToDto(categories)).ToList()));
         }
         catch
         {

@@ -8,7 +8,7 @@ namespace Stoxolio.Service.Features.Categories;
 
 public sealed record DeleteCategoryCommand(DeleteCategoryRequest Request) : ICommand<DeleteCategoryResponse>;
 
-public sealed record DeleteCategoryRequest(int Id);
+public sealed record DeleteCategoryRequest(long Id);
 
 public sealed record DeleteCategoryResponse(CategoryDto Category);
 
@@ -33,7 +33,7 @@ public class DeleteCategoryHandler(StoxolioDbContext context)
             context.Categories.Remove(category);
             await context.SaveChangesAsync(cancellationToken);
 
-            return Result.Success(new DeleteCategoryResponse(category.ToDto()));
+            return Result.Success(new DeleteCategoryResponse(category.ToDto([])));
         }
         catch
         {

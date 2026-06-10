@@ -36,7 +36,7 @@ public class UpdateCategoryHandler(StoxolioDbContext context)
             context.Categories.Update(category);
             await context.SaveChangesAsync(cancellationToken);
 
-            return Result.Success(new UpdateCategoryResponse(category.ToDto()));
+            return Result.Success(new UpdateCategoryResponse(category.ToDto([])));
         }
         catch
         {

@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using Stoxolio.Service.BuildingBlocks.Common;
 using Stoxolio.Service.BuildingBlocks.CQRS;
 using Stoxolio.Service.Data;
@@ -27,10 +28,18 @@ public class CreateCategoryHandler(StoxolioDbContext context)
                 Target = command.Request.Target
             };
 
+            var existing = await context.Categories.Where(c => c.Name == category.Name).ToListAsync(cancellationToken);
+            if (existing.Count > 0)
+                return Result.Failure<CreateCategoryResponse>(
+                    new Error(
+                        "CreateCategory.AlreadyExists",
+                        "A category with the same name already exists.",
+                        ErrorType.Conflict));
+
             context.Categories.Add(category);
             await context.SaveChangesAsync(cancellationToken);
 
-            return Result.Success(new CreateCategoryResponse(category.ToDto()));
+            return Result.Success(new CreateCategoryResponse(category.ToDto([])));
         }
         catch
         {
