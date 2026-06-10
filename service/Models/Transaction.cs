@@ -1,16 +1,16 @@
 namespace Stoxolio.Service.Models;
 
-public class Transaction
+public record Transaction : BaseEntity
 {
-    public DateOnly Date { get; init; }
-    public TimeOnly Time { get; init; }
-    public string Product { get; init; } = string.Empty;
-    public string Isin { get; init; } = string.Empty;
-    public string Exchange { get; init; } = string.Empty;
-    public int Shares { get; init; }
-    public decimal Price { get; init; }
-    public decimal Value { get; init; }
-    public decimal Fees { get; init; }
-    public decimal Total { get; init; }
-    public string OrderId { get; init; } = string.Empty;
+    public required DateOnly Date { get; init; }
+    public required TimeOnly Time { get; init; }
+    public required string Product { get; init; } = string.Empty;
+    public required string Isin { get; init; } = string.Empty;
+    public required string Exchange { get; init; } = string.Empty;
+    public required int Shares { get; init; }
+    public required decimal Price { get; init; }
+    public required decimal Value { get; init; }
+    public required decimal Fees { get; init; }
+    public required decimal Total { get; init; }
+    public required string OrderId { get; init; } = string.Empty;
 }

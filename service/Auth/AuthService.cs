@@ -79,7 +79,7 @@ public class AuthService(StoxolioDbContext context, IConfiguration configuration
 
         // Rotate: revoke old, issue new
         existing.IsRevoked = true;
-        var newAccessToken = GenerateJwtToken(existing.User);
+        var newAccessToken = GenerateJwtToken(existing.User!);
         var newRefreshToken = await CreateRefreshTokenAsync(existing.UserId);
 
         return (true, newAccessToken, newRefreshToken);
@@ -97,7 +97,7 @@ public class AuthService(StoxolioDbContext context, IConfiguration configuration
         }
     }
 
-    private async Task<string> CreateRefreshTokenAsync(int userId)
+    private async Task<string> CreateRefreshTokenAsync(long userId)
     {
         var tokenValue = GenerateRefreshTokenValue();
         context.RefreshTokens.Add(new RefreshToken

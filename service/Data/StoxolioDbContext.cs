@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Stoxolio.Service.Data.Configurations;
 using Stoxolio.Service.Models;
 
 namespace Stoxolio.Service.Data;
@@ -15,79 +16,41 @@ public class StoxolioDbContext(DbContextOptions<StoxolioDbContext> options) : Db
     {
         base.OnModelCreating(modelBuilder);
 
-        // User configuration
-        modelBuilder.Entity<User>()
-            .HasKey(u => u.Id);
+        modelBuilder.ApplyConfiguration(new UserConfiguration());
+        modelBuilder.ApplyConfiguration(new CategoryConfiguration());
+        modelBuilder.ApplyConfiguration(new StockConfiguration());
+        modelBuilder.ApplyConfiguration(new TransactionConfiguration());
+        modelBuilder.ApplyConfiguration(new RefreshTokenConfiguration());
+    }
 
-        modelBuilder.Entity<User>()
-            .HasIndex(u => u.Username)
-            .IsUnique();
+    public override int SaveChanges()
+    {
+        UpdateTimestamps();
+        return base.SaveChanges();
+    }
 
-        modelBuilder.Entity<User>()
-            .HasIndex(u => u.Email)
-            .IsUnique();
+    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        UpdateTimestamps();
+        return base.SaveChangesAsync(cancellationToken);
+    }
 
-        // Category configuration
-        modelBuilder.Entity<Category>()
-            .HasKey(c => c.Id);
+    private void UpdateTimestamps()
+    {
+        var entries = ChangeTracker.Entries<BaseEntity>();
 
-        modelBuilder.Entity<Category>()
-            .Property(c => c.Target)
-            .HasPrecision(18, 2);
+        foreach (var entry in entries)
+        {
+            if (entry.State == EntityState.Added)
+            {
+                entry.Entity.CreatedAt = DateTime.UtcNow;
+                entry.Entity.ModifiedAt = DateTime.UtcNow;
+            }
 
-        // Stock configuration
-        modelBuilder.Entity<Stock>()
-            .HasKey(s => s.Id);
-
-        modelBuilder.Entity<Stock>()
-            .HasOne(s => s.Category)
-            .WithMany(c => c.Stocks)
-            .HasForeignKey(s => s.CategoryId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        modelBuilder.Entity<Stock>()
-            .Property(s => s.Price)
-            .HasPrecision(18, 3);
-
-        modelBuilder.Entity<Stock>()
-            .Property(s => s.PrevPrice)
-            .HasPrecision(18, 3);
-
-        // Transaction configuration
-        modelBuilder.Entity<Transaction>()
-            .HasKey(t => t.OrderId);
-
-        modelBuilder.Entity<Transaction>()
-            .HasIndex(t => t.Isin);
-
-        modelBuilder.Entity<Transaction>()
-            .Property(t => t.Price)
-            .HasPrecision(18, 3);
-
-        modelBuilder.Entity<Transaction>()
-            .Property(t => t.Value)
-            .HasPrecision(18, 3);
-
-        modelBuilder.Entity<Transaction>()
-            .Property(t => t.Fees)
-            .HasPrecision(18, 3);
-
-        modelBuilder.Entity<Transaction>()
-            .Property(t => t.Total)
-            .HasPrecision(18, 3);
-
-        // RefreshToken configuration
-        modelBuilder.Entity<RefreshToken>()
-            .HasKey(r => r.Id);
-
-        modelBuilder.Entity<RefreshToken>()
-            .HasIndex(r => r.Token)
-            .IsUnique();
-
-        modelBuilder.Entity<RefreshToken>()
-            .HasOne(r => r.User)
-            .WithMany()
-            .HasForeignKey(r => r.UserId)
-            .OnDelete(DeleteBehavior.Cascade);
+            if (entry.State == EntityState.Modified)
+            {
+                entry.Entity.ModifiedAt = DateTime.UtcNow;
+            }
+        }
     }
 }
